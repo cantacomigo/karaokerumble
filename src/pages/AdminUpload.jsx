@@ -72,11 +72,17 @@ export default function AdminUpload() {
 
             // 3. Process Rumble URL (Ensure it's the embed version)
             let finalVideoUrl = rumbleUrl.trim();
+            // Se o usuário colou o link completo (ex: https://rumble.com/v76hqai-karaok-al)
             if (finalVideoUrl.includes('rumble.com/') && !finalVideoUrl.includes('/embed/')) {
                 const match = finalVideoUrl.match(/\/v([a-z0-9]+)/i);
                 if (match && match[1]) {
                     finalVideoUrl = `https://rumble.com/embed/v${match[1]}/`;
                 }
+            }
+            // Se o usuário colou apenas o ID (ex: v76hqai ou 76hqai)
+            else if (!finalVideoUrl.includes('http')) {
+                const id = finalVideoUrl.startsWith('v') ? finalVideoUrl : `v${finalVideoUrl}`;
+                finalVideoUrl = `https://rumble.com/embed/${id}/`;
             }
             console.log('[DEBUG] URL de vídeo final:', finalVideoUrl);
 

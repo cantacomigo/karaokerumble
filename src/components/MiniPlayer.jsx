@@ -12,7 +12,10 @@ export default function MiniPlayer() {
             {isVideo && (
                 <div className="absolute bottom-full right-4 mb-4 w-[320px] aspect-video rounded-xl bg-black border-2 border-primary shadow-2xl overflow-hidden group">
                     <iframe
-                        src={`${currentTrack.video_url}?pub=4ovzcy`}
+                        src={currentTrack.video_url.startsWith('http')
+                            ? `${currentTrack.video_url}${currentTrack.video_url.includes('?') ? '&' : '?'}pub=4ovzcy`
+                            : `https://rumble.com/embed/${currentTrack.video_url.replace('/', '')}/?pub=4ovzcy`
+                        }
                         className="w-full h-full"
                         frameBorder="0"
                         allowFullScreen
