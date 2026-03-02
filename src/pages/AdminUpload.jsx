@@ -33,6 +33,8 @@ export default function AdminUpload() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        console.log('[DEBUG] Formulário enviado:', { title, artist, price, format });
+
         if (!user || user.email !== ADMIN_EMAIL) {
             setErrorMsg('Acesso negado. Apenas o administrador pode gerenciar músicas.');
             return;
@@ -42,10 +44,6 @@ export default function AdminUpload() {
             setErrorMsg('Por favor, preencha a Capa e a URL do Rumble.');
             return;
         }
-        if (!user) {
-            setErrorMsg('Você precisa estar logado para fazer upload.');
-            return;
-        }
 
         setLoading(true);
         setErrorMsg('');
@@ -53,28 +51,37 @@ export default function AdminUpload() {
 
         try {
             // 1. Upload Cover Image to 'covers' bucket
+            console.log('[DEBUG] Iniciando upload da imagem de capa...');
             const coverExt = coverFile.name.split('.').pop();
             const coverPath = `${Date.now()}_${Math.random().toString(36).substring(7)}.${coverExt}`;
+
             const { data: coverData, error: coverError } = await supabase.storage
                 .from('covers')
                 .upload(coverPath, coverFile);
 
-            if (coverError) throw new Error(`Erro no upload da capa: ${coverError.message}`);
+            if (coverError) {
+                console.error('[DEBUG] Erro no storage (covers):', coverError);
+                throw new Error(`Erro no upload da capa: ${coverError.message || 'Verifique se o bucket "covers" existe e é público.'}`);
+            }
+
+            console.log('[DEBUG] Upload da capa concluído:', coverData);
 
             // 2. Get Public URL for cover
             const coverUrl = supabase.storage.from('covers').getPublicUrl(coverPath).data.publicUrl;
+            console.log('[DEBUG] URL da capa gerada:', coverUrl);
 
             // 3. Process Rumble URL (Ensure it's the embed version)
             let finalVideoUrl = rumbleUrl.trim();
             if (finalVideoUrl.includes('rumble.com/') && !finalVideoUrl.includes('/embed/')) {
-                // Tenta converter link comum em embed básico (v76hqai -> /embed/v76hqai/)
                 const match = finalVideoUrl.match(/\/v([a-z0-9]+)/i);
                 if (match && match[1]) {
                     finalVideoUrl = `https://rumble.com/embed/v${match[1]}/`;
                 }
             }
+            console.log('[DEBUG] URL de vídeo final:', finalVideoUrl);
 
             // 4. Insert into 'tracks' database
+            console.log('[DEBUG] Inserindo dados na tabela "tracks"...');
             const { error: dbError } = await supabase.from('tracks').insert([
                 {
                     title,
@@ -87,7 +94,12 @@ export default function AdminUpload() {
                 }
             ]);
 
-            if (dbError) throw new Error(`Erro ao salvar no banco: ${dbError.message}`);
+            if (dbError) {
+                console.error('[DEBUG] Erro no banco de dados:', dbError);
+                throw new Error(`Erro ao salvar no banco: ${dbError.message}`);
+            }
+
+            console.log('[DEBUG] Faixa salva com sucesso!');
 
             // Reset form
             setSuccessMsg('Música cadastrada com sucesso!');
@@ -99,9 +111,11 @@ export default function AdminUpload() {
             setRumbleUrl('');
 
         } catch (error) {
+            console.error('[ERROR] Falha geral no submit:', error);
             setErrorMsg(error.message);
         } finally {
             setLoading(false);
+            console.log('[DEBUG] Processo de submit finalizado.');
         }
     };
 
