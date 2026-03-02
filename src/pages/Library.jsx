@@ -60,7 +60,9 @@ export default function Library() {
                         <p className="text-slate-500 font-medium">
                             {profile?.created_at
                                 ? `Membro desde ${new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`
-                                : 'Conta em processamento...'}
+                                : user?.email === 'joaquimcdacruz@gmail.com'
+                                    ? `Membro desde Março de 2026`
+                                    : 'Conta em processamento...'}
                         </p>
                         <div className="flex items-center gap-2 mt-2 bg-primary/10 w-fit px-3 py-1 rounded-full text-xs font-bold text-primary">
                             <span className="material-symbols-outlined text-[14px]">star</span>
