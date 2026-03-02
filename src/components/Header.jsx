@@ -42,16 +42,30 @@ export default function Header() {
                             <Link to="/library" className="flex items-center gap-3 cursor-pointer group">
                                 <div className="text-right hidden md:block">
                                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors">
-                                        {profile?.full_name || 'Usuário VIP'}
+                                        {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Joaquim'}
                                     </p>
                                     <p className="text-xs text-primary font-medium uppercase tracking-wider">
-                                        {profile?.plan_type === 'admin' ? 'Acesso Total / Admin' :
-                                            profile?.plan_type === 'premium' ? 'Plano Premium' :
-                                                profile?.plan_type === 'pro' ? 'Plano Pro' : 'Plano Básico'}
+                                        {profile ? (
+                                            profile.plan_type === 'admin' ? 'Acesso Total / Admin' :
+                                                profile.plan_type === 'premium' ? 'Plano Premium' :
+                                                    profile.plan_type === 'pro' ? 'Plano Pro' : 'Plano Básico'
+                                        ) : (
+                                            user?.email === 'joaquimcdacruz@gmail.com' ? 'Acesso Total / Admin' : 'Carregando...'
+                                        )}
                                     </p>
                                 </div>
-                                <div className="size-10 rounded-full bg-primary/10 border-2 border-primary/20 overflow-hidden group-hover:border-primary transition-colors">
-                                    <img src={profile?.avatar_url || "https://ui-avatars.com/api/?name=VIP&background=cd2bee&color=fff"} alt="Avatar" className="w-full h-full object-cover" />
+                                <div className="size-10 rounded-full bg-primary/10 border-2 border-primary/20 overflow-hidden group-hover:border-primary transition-colors flex items-center justify-center">
+                                    {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
+                                        <img
+                                            src={profile?.avatar_url || user?.user_metadata?.avatar_url}
+                                            alt="Avatar"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-xs font-bold text-primary">
+                                            {(profile?.full_name || user?.user_metadata?.full_name || 'J').charAt(0).toUpperCase()}
+                                        </span>
+                                    )}
                                 </div>
                             </Link>
 
