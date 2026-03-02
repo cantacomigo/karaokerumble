@@ -11,14 +11,17 @@ export default function MiniPlayer() {
             {/* Rumble Video Embed (Aparece acima do player quando é vídeo) */}
             {isVideo && (
                 <div className="absolute bottom-full right-4 mb-4 w-[320px] aspect-video rounded-xl bg-black border-2 border-primary shadow-2xl overflow-hidden group">
+                    {/* Camada de Proteção (Evita cliques e hover no Rumble) */}
+                    <div className="absolute inset-0 z-10 cursor-default"></div>
+
                     <iframe
                         src={currentTrack.video_url.startsWith('http')
-                            ? `${currentTrack.video_url}${currentTrack.video_url.includes('?') ? '&' : '?'}pub=4ovzcy`
-                            : `https://rumble.com/embed/${currentTrack.video_url.replace('/', '')}/?pub=4ovzcy`
+                            ? `${currentTrack.video_url}${currentTrack.video_url.includes('?') ? '&' : '?'}pub=4ovzcy&autoplay=1`
+                            : `https://rumble.com/embed/${currentTrack.video_url.replace('/', '')}/?pub=4ovzcy&autoplay=1`
                         }
-                        className="w-full h-full"
+                        className="w-[115%] h-[115%] -ml-[7.5%] -mt-[7.5%]"
                         frameBorder="0"
-                        allowFullScreen
+                        allow="autoplay; fullscreen"
                     ></iframe>
                 </div>
             )}

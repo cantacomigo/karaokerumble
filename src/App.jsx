@@ -13,11 +13,11 @@ import AdminUpload from './pages/AdminUpload';
 import Settings from './pages/Settings';
 
 function App() {
-  // v1.2.3 - Auth Refresh Fix
-  console.log("Karaoke Studio v1.2.3 - Auth & Performance Fix");
+  // v1.2.4 - White Label Player Fix
+  console.log("Karaoke Studio v1.2.4 - Player Polished");
   return (
     <Router>
-      <div className="fixed top-0 left-0 z-[9999] bg-primary text-white text-[10px] px-2 font-bold pointer-events-none tracking-tighter shadow-md">v1.2.3 SYNC</div>
+      <div className="fixed top-0 left-0 z-[9999] bg-primary text-white text-[10px] px-2 font-bold pointer-events-none tracking-tighter shadow-md">v1.2.4 SYNC</div>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
