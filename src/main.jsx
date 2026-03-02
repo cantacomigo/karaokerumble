@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
-// Cache buster for production refresh: v1.0.4
+// Cache buster for production refresh: v1.1.2
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { AudioProvider } from './context/AudioContext.jsx'

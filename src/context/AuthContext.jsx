@@ -14,10 +14,10 @@ export function AuthProvider({ children }) {
         // Limite de tempo de segurança (5 segundos) para não travar a tela
         const timeoutId = setTimeout(() => {
             if (mounted && loading) {
-                console.warn('Supabase: Tempo limite de inicialização atingido. Forçando carregamento.');
+                console.warn('Supabase: Tempo limite de inicialização atingido (10s). Forçando carregamento.');
                 setLoading(false);
             }
-        }, 5000);
+        }, 10000);
 
         // Busca a sessão atual quando o app carrega
         const fetchSession = async () => {
