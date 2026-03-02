@@ -45,8 +45,9 @@ export default function Header() {
                                         {profile?.full_name || 'Usuário VIP'}
                                     </p>
                                     <p className="text-xs text-primary font-medium uppercase tracking-wider">
-                                        {profile?.plan_type === 'premium' ? 'Plano Premium' :
-                                            profile?.plan_type === 'pro' ? 'Plano Pro' : 'Plano Básico'}
+                                        {profile?.plan_type === 'admin' ? 'Acesso Total / Admin' :
+                                            profile?.plan_type === 'premium' ? 'Plano Premium' :
+                                                profile?.plan_type === 'pro' ? 'Plano Pro' : 'Plano Básico'}
                                     </p>
                                 </div>
                                 <div className="size-10 rounded-full bg-primary/10 border-2 border-primary/20 overflow-hidden group-hover:border-primary transition-colors">

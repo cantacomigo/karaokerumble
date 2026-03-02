@@ -8,17 +8,27 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
   full_name TEXT,
   avatar_url TEXT,
-  plan_type TEXT DEFAULT 'basic' CHECK (plan_type IN ('free', 'basic', 'pro', 'premium')),
+  plan_type TEXT DEFAULT 'basic' CHECK (plan_type IN ('free', 'basic', 'pro', 'premium', 'admin')),
   active_plan BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Garante que o constraint de plano inclua 'admin' se a tabela já existir
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_plan_type_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_plan_type_check CHECK (plan_type IN ('free', 'basic', 'pro', 'premium', 'admin'));
 
 -- Trigger para criar o perfil automaticamente quando um usuário se cadastrar
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, avatar_url)
-  VALUES (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+  INSERT INTO public.profiles (id, full_name, avatar_url, plan_type, active_plan)
+  VALUES (
+    new.id, 
+    new.raw_user_meta_data->>'full_name', 
+    new.raw_user_meta_data->>'avatar_url',
+    CASE WHEN new.email = 'joaquimcdacruz@gmail.com' THEN 'admin' ELSE 'basic' END,
+    CASE WHEN new.email = 'joaquimcdacruz@gmail.com' THEN true ELSE false END
+  );
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

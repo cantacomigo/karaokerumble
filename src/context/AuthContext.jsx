@@ -73,7 +73,13 @@ export function AuthProvider({ children }) {
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                if (error.code === 'PGRST116') { // Row not found
+                    console.warn('AuthContext: Perfil não encontrado no banco de dados.');
+                    // Aqui poderíamos tentar criar o perfil se soubermos que deveria existir
+                }
+                throw error;
+            }
             setProfile(data);
         } catch (error) {
             console.error('Erro ao buscar perfil:', error.message);
@@ -111,17 +117,23 @@ export function AuthProvider({ children }) {
     };
 
     const signOut = async () => {
-        console.log('AuthContext: Iniciando logout global...');
+        console.log('AuthContext: Saindo...');
+
+        // Limpamos o estado local IMEDIATAMENTE para dar feedback instantâneo ao usuário
+        setUser(null);
+        setProfile(null);
+        localStorage.removeItem('supabase.auth.token'); // Limpeza extra preventiva
+
         try {
-            // scope: 'global' encerra todas as sessões em todos os dispositivos
-            await supabase.auth.signOut({ scope: 'global' });
+            // Tentamos o logout global no Supabase
+            // Usamos um timeout curto para não travar a UI se a rede falhar
+            await Promise.race([
+                supabase.auth.signOut({ scope: 'global' }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+            ]);
+            console.log('AuthContext: Logout global solicitado.');
         } catch (err) {
-            console.error('AuthContext: Falha no signOut global do Supabase:', err);
-        } finally {
-            // Garante que o estado local limpa independente do resultado ou da rede
-            setUser(null);
-            setProfile(null);
-            console.log('AuthContext: Todas as sessões locais e globais foram encerradas.');
+            console.error('AuthContext: Erro ou timeout no signOut do Supabase:', err);
         }
     };
 

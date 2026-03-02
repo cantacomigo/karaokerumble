@@ -10,6 +10,7 @@ import Plans from './pages/Plans';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import AdminUpload from './pages/AdminUpload';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           {/* Rotas Protegidas */}
           <Route element={<AuthGuard />}>
             <Route path="library" element={<Library />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="checkout" element={<Checkout />} />
             {/* Rotas Administrativas */}
             <Route element={<AdminGuard />}>

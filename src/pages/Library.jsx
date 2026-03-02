@@ -54,21 +54,25 @@ export default function Library() {
                 <div className="flex items-center gap-6">
                     <div className="size-24 rounded-full border-4 border-primary/20 bg-cover bg-center shrink-0 shadow-lg shadow-primary/10" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAci6JF9EK6TniNTV3AgZgmxuSwZnETPr7TdeB0jqCrARHBeklDxRr76gZd041wq-49wdhrTZupPpNfaWY-18MlvwIA9PExgLtli_m4D7JnxhH7GnGfn1FdjPlxM3B6xAXr6kvBSeENU24v_iNBabKx2iaoJb8ecqsthI8a1mrKpI-WdYSh40yqaE4gakdqfKJ2B2ndYy03WfL1qqhGKxWccKsJnKuH5cJaD9t-F3VhNQJsgaD1HxLs2LBoM4aR9UbBl4eKc03a6cw")' }}></div>
                     <div className="flex flex-col">
-                        <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{profile?.full_name || 'Usuário VIP'}</h1>
+                        <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">
+                            {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
+                        </h1>
                         <p className="text-slate-500 font-medium">
-                            Membro desde {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'N/A'}
+                            {profile?.created_at
+                                ? `Membro desde ${new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`
+                                : 'Conta em processamento...'}
                         </p>
                         <div className="flex items-center gap-2 mt-2 bg-primary/10 w-fit px-3 py-1 rounded-full text-xs font-bold text-primary">
                             <span className="material-symbols-outlined text-[14px]">star</span>
-                            Plano VIP Ativo
+                            {profile?.plan_type === 'admin' ? 'Acesso Total / Admin' : 'Plano VIP Ativo'}
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
-                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                    <Link to="/settings" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 h-12 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
                         <span className="material-symbols-outlined text-lg">settings</span>
                         Configurações
-                    </button>
+                    </Link>
                 </div>
             </div>
 

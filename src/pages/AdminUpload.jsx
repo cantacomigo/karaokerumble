@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
+const ADMIN_EMAIL = 'joaquimcdacruz@gmail.com';
+
 export default function AdminUpload() {
     const { user } = useAuth();
     const navigate = useNavigate();
