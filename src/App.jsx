@@ -13,8 +13,8 @@ import AdminUpload from './pages/AdminUpload';
 import Settings from './pages/Settings';
 
 function App() {
-  // v1.1.4 - Library Admin View
-  console.log("Karaoke Studio v1.1.4 - Admin View Fix");
+  // v1.1.7 - HARD FIX: No more ghost user
+  console.log("Karaoke Studio v1.1.7 - Static Header");
   return (
     <Router>
       <Routes>
