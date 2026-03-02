@@ -79,6 +79,7 @@ export default function Login() {
                                     id="fullName"
                                     name="fullName"
                                     type="text"
+                                    autoComplete="name"
                                     required={!isLogin}
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
@@ -97,6 +98,7 @@ export default function Login() {
                                 id="email"
                                 name="email"
                                 type="email"
+                                autoComplete="email"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -119,6 +121,7 @@ export default function Login() {
                                 id="password"
                                 name="password"
                                 type="password"
+                                autoComplete={isLogin ? "current-password" : "new-password"}
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}

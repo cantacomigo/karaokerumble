@@ -237,6 +237,7 @@ export default function AdminUpload() {
                                 id="rumbleUrl"
                                 name="rumbleUrl"
                                 type="url"
+                                autoComplete="off"
                                 required
                                 value={rumbleUrl}
                                 onChange={(e) => setRumbleUrl(e.target.value)}

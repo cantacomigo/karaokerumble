@@ -67,18 +67,24 @@ export default function Settings() {
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nome Completo</label>
+                                <label htmlFor="fullName" className="text-sm font-bold text-slate-700 dark:text-slate-300">Nome Completo</label>
                                 <input
+                                    id="fullName"
+                                    name="fullName"
                                     type="text"
+                                    autoComplete="name"
                                     defaultValue={profile?.full_name || ''}
                                     className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800 border-none ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-primary rounded-lg text-slate-900 dark:text-slate-100"
                                 />
                             </div>
 
                             <div className="flex flex-col gap-2 opacity-60">
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email (Não alterável)</label>
+                                <label htmlFor="email" className="text-sm font-bold text-slate-700 dark:text-slate-300">Email (Não alterável)</label>
                                 <input
+                                    id="email"
+                                    name="email"
                                     type="email"
+                                    autoComplete="email"
                                     value={user?.email || ''}
                                     readOnly
                                     className="w-full h-12 px-4 bg-slate-100 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-lg text-slate-500 cursor-not-allowed"
