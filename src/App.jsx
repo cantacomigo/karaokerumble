@@ -1,0 +1,40 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import AuthGuard from './components/AuthGuard';
+import AdminGuard from './components/AdminGuard';
+import Home from './pages/Home';
+import Catalog from './pages/Catalog';
+import Cart from './pages/Cart';
+import Library from './pages/Library';
+import Plans from './pages/Plans';
+import Checkout from './pages/Checkout';
+import Login from './pages/Login';
+import AdminUpload from './pages/AdminUpload';
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="login" element={<Login />} />
+          <Route path="catalog" element={<Catalog />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="plans" element={<Plans />} />
+
+          {/* Rotas Protegidas */}
+          <Route element={<AuthGuard />}>
+            <Route path="library" element={<Library />} />
+            <Route path="checkout" element={<Checkout />} />
+            {/* Rotas Administrativas */}
+            <Route element={<AdminGuard />}>
+              <Route path="/upload" element={<AdminUpload />} />
+            </Route>
+          </Route>
+        </Route>
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
