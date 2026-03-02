@@ -13,8 +13,8 @@ import AdminUpload from './pages/AdminUpload';
 import Settings from './pages/Settings';
 
 function App() {
-  // v1.1.2 - Forced Refresh
-  console.log("Karaoke Studio v1.1.2 - Live Sync");
+  // v1.1.4 - Library Admin View
+  console.log("Karaoke Studio v1.1.4 - Admin View Fix");
   return (
     <Router>
       <Routes>

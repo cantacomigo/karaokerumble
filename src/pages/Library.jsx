@@ -9,42 +9,66 @@ export default function Library() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchPurchases() {
+        async function fetchLibraryData() {
             if (!user) {
                 setLoading(false);
                 return;
             }
 
             try {
-                const { data, error } = await supabase
-                    .from('purchases')
-                    .select(`
-            id,
-            price_paid,
-            format_purchased,
-            purchased_at,
-            tracks (
-              id,
-              title,
-              artist,
-              duration,
-              cover_url,
-              audio_url
-            )
-          `)
-                    .eq('user_id', user.id)
-                    .order('purchased_at', { ascending: false });
+                const isAdmin = user.email === 'joaquimcdacruz@gmail.com';
 
-                if (error) throw error;
-                setPurchases(data || []);
+                if (isAdmin) {
+                    // Para o ADMIN, buscamos todas as músicas do catálogo
+                    const { data, error } = await supabase
+                        .from('tracks')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    // Mapeamos para o formato que o componente espera
+                    const formattedData = data.map(track => ({
+                        id: `admin-${track.id}`,
+                        price_paid: 0,
+                        format_purchased: track.format || 'MP3 320kbps',
+                        purchased_at: track.created_at,
+                        tracks: track
+                    }));
+                    setPurchases(formattedData);
+                } else {
+                    // Para usuários normais, buscamos apenas compras
+                    const { data, error } = await supabase
+                        .from('purchases')
+                        .select(`
+                            id,
+                            price_paid,
+                            format_purchased,
+                            purchased_at,
+                            tracks (
+                                id,
+                                title,
+                                artist,
+                                duration,
+                                cover_url,
+                                audio_url,
+                                video_url
+                            )
+                        `)
+                        .eq('user_id', user.id)
+                        .order('purchased_at', { ascending: false });
+
+                    if (error) throw error;
+                    setPurchases(data || []);
+                }
             } catch (error) {
-                console.error('Erro ao buscar compras:', error.message);
+                console.error('Erro ao buscar dados da biblioteca:', error.message);
             } finally {
                 setLoading(false);
             }
         }
 
-        fetchPurchases();
+        fetchLibraryData();
     }, [user]);
 
     return (
