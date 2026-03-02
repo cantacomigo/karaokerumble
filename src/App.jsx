@@ -13,10 +13,11 @@ import AdminUpload from './pages/AdminUpload';
 import Settings from './pages/Settings';
 
 function App() {
-  // v1.1.7 - HARD FIX: No more ghost user
-  console.log("Karaoke Studio v1.1.7 - Static Header");
+  // v1.1.8 - FINAL NUCLEAR CACHE BREAK
+  console.log("Karaoke Studio v1.1.8 - Force Sync Active");
   return (
     <Router>
+      <div className="fixed top-0 left-0 z-[9999] bg-primary text-white text-[10px] px-2 font-bold pointer-events-none">v1.1.8 SYNC</div>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
