@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext.jsx';
 
 const MOCK_CART = [
     { id: 1, title: 'Evidências (Playback)', artist: 'Chitãozinho & Xororó', format: 'MP3 320kbps', price: 14.90, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB50_9vSQ7ZnCPwIJ_cPBkZbYi3gXsxtCfc7rrI50abc2AoilC0rsi03-UUboKxl075D5WdEfsMs1_DVMhegC2fQs87ueMkmvdLeEjw8Pf3_2WLcDyMp50A1ygQsh2AyG6u1eIFcDl58zBnfdt0L_-2tBBp42jht6e9bRvSwfonRgr8OY5fDrp3l6pU7RAHgg6a0VbVNnlZinpDujx9hRhNHVGlXPekDzQW6CeeUuzaUsiMjbF0UBS3eGF5wbP0RDvlHw--s3FWr8I' },

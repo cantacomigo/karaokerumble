@@ -117,23 +117,26 @@ export function AuthProvider({ children }) {
     };
 
     const signOut = async () => {
-        console.log('AuthContext: Saindo...');
+        console.log('AuthContext: Iniciando processo de saída...');
 
-        // Limpamos o estado local IMEDIATAMENTE para dar feedback instantâneo ao usuário
+        // 1. Limpamos o estado local IMEDIATAMENTE
         setUser(null);
         setProfile(null);
-        localStorage.removeItem('supabase.auth.token'); // Limpeza extra preventiva
+
+        // 2. Limpeza profunda preventina do localStorage
+        // Supabase usa chaves como 'sb-xxxx-auth-token'
+        Object.keys(localStorage).forEach(key => {
+            if (key.includes('supabase') || key.includes('sb-')) {
+                localStorage.removeItem(key);
+            }
+        });
 
         try {
-            // Tentamos o logout global no Supabase
-            // Usamos um timeout curto para não travar a UI se a rede falhar
-            await Promise.race([
-                supabase.auth.signOut({ scope: 'global' }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
-            ]);
-            console.log('AuthContext: Logout global solicitado.');
+            // 3. Notificamos o servidor
+            await supabase.auth.signOut({ scope: 'global' });
+            console.log('AuthContext: Logout concluído no servidor.');
         } catch (err) {
-            console.error('AuthContext: Erro ou timeout no signOut do Supabase:', err);
+            console.error('AuthContext: Erro ao sair no servidor:', err);
         }
     };
 
