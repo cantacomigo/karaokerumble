@@ -1,6 +1,86 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import { supabase } from '../lib/supabase';
 
 export default function Plans() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [loadingPlan, setLoadingPlan] = useState(null);
+
+    const handleSubscribe = async (planId, planName, planPrice) => {
+        if (!user) {
+            navigate('/login', { state: { from: '/plans' } });
+            return;
+        }
+
+        try {
+            setLoadingPlan(planId);
+
+            // Chamar a Edge Function para criar a preferência
+            const { data, error } = await supabase.functions.invoke('create-mp-preference', {
+                body: {
+                    planId,
+                    planName,
+                    planPrice,
+                    userId: user.id
+                }
+            });
+
+            if (error) throw error;
+
+            // Redirecionar para o Checkout do Mercado Pago
+            if (data?.init_point) {
+                window.location.href = data.init_point;
+            } else {
+                throw new Error('Não foi possível gerar o link de pagamento.');
+            }
+        } catch (error) {
+            console.error('Erro no checkout:', error.message);
+            alert('Erro ao iniciar pagamento. Tente novamente em instantes.');
+        } finally {
+            setLoadingPlan(null);
+        }
+    };
+
+    const plans = [
+        {
+            id: 'basic',
+            name: 'Básico',
+            price: 29.90,
+            features: [
+                'Acesso a 10 playbacks por mês',
+                'Qualidade MP3 320kbps',
+                'Suporte via E-mail'
+            ],
+            popular: false
+        },
+        {
+            id: 'pro',
+            name: 'Profissional',
+            price: 59.90,
+            features: [
+                'Acesso a 50 playbacks por mês',
+                'Qualidade WAV High-Fidelity',
+                'Download ilimitado de lançamentos',
+                'Suporte Prioritário 12h'
+            ],
+            popular: true
+        },
+        {
+            id: 'premium',
+            name: 'Premium',
+            price: 99.90,
+            features: [
+                'Playbacks ilimitados (Catálogo Full)',
+                'Qualidade Master WAV 24-bit',
+                'Acesso antecipado a lançamentos',
+                'Suporte VIP WhatsApp 24h'
+            ],
+            popular: false
+        }
+    ];
+
     return (
         <div className="flex-1 flex flex-col items-center py-12 px-4 md:px-10 lg:px-20 max-w-7xl mx-auto w-full">
             <div className="text-center mb-12 flex flex-col items-center gap-4">
@@ -12,102 +92,48 @@ export default function Plans() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-20">
-                {/* Basic Plan */}
-                <div className="group flex flex-col gap-8 rounded-xl border border-primary/20 bg-white/50 dark:bg-slate-900/50 p-8 transition-all hover:border-primary/50 relative overflow-hidden backdrop-blur-sm shadow-sm ring-1 ring-primary/5">
-                    <div className="flex flex-col gap-2">
-                        <h3 className="text-slate-500 text-sm font-bold uppercase tracking-wider">Básico</h3>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-slate-900 dark:text-slate-100 text-4xl font-black tracking-tight">R$ 29,90</span>
-                            <span className="text-slate-500 text-sm font-medium">/mês</span>
+                {plans.map((plan) => (
+                    <div
+                        key={plan.id}
+                        className={`group flex flex-col gap-8 rounded-xl border ${plan.popular ? 'border-2 border-primary scale-105 shadow-2xl shadow-primary/10 bg-white dark:bg-slate-900' : 'border-primary/20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-sm ring-1 ring-primary/5'} p-8 transition-all relative overflow-hidden`}
+                    >
+                        {plan.popular && (
+                            <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-lg">
+                                Mais Popular
+                            </div>
+                        )}
+                        <div className="flex flex-col gap-2">
+                            <h3 className={`${plan.popular ? 'text-primary' : 'text-slate-500'} text-sm font-bold uppercase tracking-wider`}>{plan.name}</h3>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-slate-900 dark:text-slate-100 text-4xl font-black tracking-tight">R$ {plan.price.toFixed(2).replace('.', ',')}</span>
+                                <span className="text-slate-500 text-sm font-medium">/mês</span>
+                            </div>
                         </div>
+                        <div className="flex flex-col gap-4">
+                            {plan.features.map((feature, idx) => (
+                                <div key={idx} className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                                    <span className="material-symbols-outlined text-primary">check_circle</span>
+                                    {feature}
+                                </div>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => handleSubscribe(plan.id, plan.name, plan.price)}
+                            disabled={loadingPlan === plan.id}
+                            className={`mt-auto flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 transition-all ${plan.popular ? 'bg-primary text-white hover:brightness-110 shadow-lg shadow-primary/20' : 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-700'} text-sm font-bold disabled:opacity-50 disabled:cursor-wait`}
+                        >
+                            {loadingPlan === plan.id ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                    Iniciando...
+                                </div>
+                            ) : 'Assinar Agora'}
+                        </button>
                     </div>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Acesso a 10 playbacks por mês
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Qualidade MP3 320kbps
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Suporte via E-mail
-                        </div>
-                    </div>
-                    <Link to="/checkout" className="mt-auto flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-bold transition-all hover:bg-slate-300 dark:hover:bg-slate-700">
-                        Assinar Agora
-                    </Link>
-                </div>
-
-                {/* Pro Plan */}
-                <div className="group flex flex-col gap-8 rounded-xl border-2 border-primary bg-white dark:bg-slate-900 p-8 transition-all relative scale-105 shadow-2xl shadow-primary/10">
-                    <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-lg">
-                        Mais Popular
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <h3 className="text-primary text-sm font-bold uppercase tracking-wider">Profissional</h3>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-slate-900 dark:text-slate-100 text-4xl font-black tracking-tight">R$ 59,90</span>
-                            <span className="text-slate-500 text-sm font-medium">/mês</span>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Acesso a 50 playbacks por mês
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed font-bold text-slate-900 dark:text-slate-100">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Qualidade WAV High-Fidelity
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Download ilimitado de lançamentos
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Suporte Prioritário 12h
-                        </div>
-                    </div>
-                    <Link to="/checkout" className="mt-auto flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary text-white text-sm font-bold transition-all hover:brightness-110 shadow-lg shadow-primary/20">
-                        Assinar Agora
-                    </Link>
-                </div>
-
-                {/* Premium Plan */}
-                <div className="group flex flex-col gap-8 rounded-xl border border-primary/20 bg-white/50 dark:bg-slate-900/50 p-8 transition-all hover:border-primary/50 relative overflow-hidden backdrop-blur-sm shadow-sm ring-1 ring-primary/5">
-                    <div className="flex flex-col gap-2">
-                        <h3 className="text-slate-500 text-sm font-bold uppercase tracking-wider">Premium</h3>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-slate-900 dark:text-slate-100 text-4xl font-black tracking-tight">R$ 99,90</span>
-                            <span className="text-slate-500 text-sm font-medium">/mês</span>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Playbacks ilimitados (Catálogo Full)
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Qualidade Master WAV 24-bit
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Acesso antecipado a lançamentos
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 text-sm leading-relaxed font-bold text-slate-900 dark:text-slate-100">
-                            <span className="material-symbols-outlined text-primary">check_circle</span>
-                            Suporte VIP WhatsApp 24h
-                        </div>
-                    </div>
-                    <Link to="/checkout" className="mt-auto flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-bold transition-all hover:bg-slate-300 dark:hover:bg-slate-700">
-                        Assinar Agora
-                    </Link>
-                </div>
+                ))}
             </div>
 
+            {/* Comparison Table & Footer remains the same */}
             <div className="w-full flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-slate-900 dark:text-slate-100 text-2xl font-bold leading-tight tracking-tight">Comparar Planos</h2>
