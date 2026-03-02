@@ -4,19 +4,24 @@
 -- ==============================================================================
 
 -- Apenas admins (ou auth users nesse caso pra simplificar) podem inserir novas faixas
--- Atenção: Se essa política já existir, o Supabase ignorará o erro ou você pode pular esta linha.
+DROP POLICY IF EXISTS "Usuários autenticados podem inserir faixas" ON public.tracks;
 CREATE POLICY "Usuários autenticados podem inserir faixas" ON public.tracks
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- Cria os buckets se não existirem (Pode dar erro se tentar criar pelo SQL Editor dependendo das permissões, 
--- caso dê erro, crie os buckets "covers" e "audio" manualmente pelo Dashboard do Supabase e marque-os como Public)
+-- Cria os buckets se não existirem
 INSERT INTO storage.buckets (id, name, public) VALUES ('covers', 'covers', true) ON CONFLICT DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('audio', 'audio', true) ON CONFLICT DO NOTHING;
 
 -- Acesso Público de Leitura para Capas e Áudios
+DROP POLICY IF EXISTS "Public Access to Covers" ON storage.objects;
 CREATE POLICY "Public Access to Covers" ON storage.objects FOR SELECT USING (bucket_id = 'covers');
+
+DROP POLICY IF EXISTS "Public Access to Audio" ON storage.objects;
 CREATE POLICY "Public Access to Audio" ON storage.objects FOR SELECT USING (bucket_id = 'audio');
 
 -- Usuários Autenticados podem fazer Upload de Capas e Áudios
+DROP POLICY IF EXISTS "Auth Insert Covers" ON storage.objects;
 CREATE POLICY "Auth Insert Covers" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'covers' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Auth Insert Audio" ON storage.objects;
 CREATE POLICY "Auth Insert Audio" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'audio' AND auth.role() = 'authenticated');
