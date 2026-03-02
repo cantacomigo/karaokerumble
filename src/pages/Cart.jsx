@@ -6,7 +6,7 @@ const MOCK_CART = [
 ];
 
 export default function Cart() {
-    const subtotal = MOCK_CART.reduce((sum, item) => sum + item.price, 0);
+    const { cart, cartTotal, removeFromCart } = useCart();
 
     return (
         <div className="flex w-full max-w-[1200px] mx-auto py-8 flex-col px-4 gap-8">
@@ -25,35 +25,49 @@ export default function Cart() {
                     <div className="flex items-center justify-between pb-4 border-b border-primary/10">
                         <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Seu Carrinho</h1>
                         <span className="text-sm font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">
-                            {MOCK_CART.length} itens
+                            {cart.length} {cart.length === 1 ? 'item' : 'itens'}
                         </span>
                     </div>
 
                     <div className="flex flex-col gap-4">
-                        {MOCK_CART.map(item => (
-                            <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl border border-primary/10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm group transition-shadow hover:shadow-md">
-                                <div className="size-20 rounded-lg overflow-hidden shrink-0 shadow-sm">
-                                    <img src={item.image} alt="Capa" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                </div>
-                                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{item.title}</h3>
-                                    <p className="text-sm text-slate-500 truncate">{item.artist}</p>
-                                    <span className="inline-flex mt-1 items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded w-fit">
-                                        <span className="material-symbols-outlined text-[10px]">audio_file</span>
-                                        {item.format}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-end gap-3 shrink-0">
-                                    <span className="text-lg font-black text-primary">
-                                        R$ {item.price.toFixed(2).replace('.', ',')}
-                                    </span>
-                                    <button className="text-sm text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-base">delete</span>
-                                        <span className="hidden sm:inline">Remover</span>
-                                    </button>
-                                </div>
+                        {cart.length === 0 ? (
+                            <div className="py-12 flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white/30 dark:bg-slate-900/30">
+                                <span className="material-symbols-outlined text-4xl mb-4 opacity-50">shopping_cart</span>
+                                <p className="text-lg">Seu carrinho está vazio.</p>
+                                <p className="text-sm mt-1 mb-6">Explore o catálogo para adicionar músicas.</p>
+                                <Link to="/catalog" className="flex items-center justify-center rounded-xl bg-primary px-6 h-11 text-sm font-bold text-white transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-primary/25">
+                                    Explorar Catálogo
+                                </Link>
                             </div>
-                        ))}
+                        ) : (
+                            cart.map(item => (
+                                <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl border border-primary/10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm group transition-shadow hover:shadow-md">
+                                    <div className="size-20 rounded-lg overflow-hidden shrink-0 shadow-sm">
+                                        <img src={item.cover_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuB50_9vSQ7ZnCPwIJ_cPBkZbYi3gXsxtCfc7rrI50abc2AoilC0rsi03-UUboKxl075D5WdEfsMs1_DVMhegC2fQs87ueMkmvdLeEjw8Pf3_2WLcDyMp50A1ygQsh2AyG6u1eIFcDl58zBnfdt0L_-2tBBp42jht6e9bRvSwfonRgr8OY5fDrp3l6pU7RAHgg6a0VbVNnlZinpDujx9hRhNHVGlXPekDzQW6CeeUuzaUsiMjbF0UBS3eGF5wbP0RDvlHw--s3FWr8I"} alt="Capa" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    </div>
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{item.title}</h3>
+                                        <p className="text-sm text-slate-500 truncate">{item.artist}</p>
+                                        <span className="inline-flex mt-1 items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded w-fit">
+                                            <span className="material-symbols-outlined text-[10px]">audio_file</span>
+                                            {item.format}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-3 shrink-0">
+                                        <span className="text-lg font-black text-primary">
+                                            R$ {Number(item.price).toFixed(2).replace('.', ',')}
+                                        </span>
+                                        <button
+                                            onClick={() => removeFromCart(item.id)}
+                                            className="text-sm text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                                        >
+                                            <span className="material-symbols-outlined text-base">delete</span>
+                                            <span className="hidden sm:inline">Remover</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
 
                     <Link to="/catalog" className="flex items-center gap-2 text-primary text-sm font-bold hover:underline w-fit mt-4">
@@ -69,8 +83,8 @@ export default function Cart() {
 
                         <div className="flex flex-col gap-3">
                             <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 text-sm">
-                                <span>Subtotal ({MOCK_CART.length} itens)</span>
-                                <span className="font-medium text-slate-900 dark:text-slate-100">R$ {subtotal.toFixed(2).replace('.', ',')}</span>
+                                <span>Subtotal ({cart.length} {cart.length === 1 ? 'item' : 'itens'})</span>
+                                <span className="font-medium text-slate-900 dark:text-slate-100">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
                             </div>
                             <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 text-sm">
                                 <span>Descontos</span>
@@ -84,7 +98,7 @@ export default function Cart() {
 
                         <div className="pt-4 border-t border-primary/10 flex items-center justify-between">
                             <span className="text-lg font-bold text-slate-900 dark:text-slate-100">Total</span>
-                            <span className="text-3xl font-black text-primary">R$ {subtotal.toFixed(2).replace('.', ',')}</span>
+                            <span className="text-3xl font-black text-primary">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
                         </div>
 
                         <div className="flex flex-col gap-3 mt-2">

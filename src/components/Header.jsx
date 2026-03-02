@@ -1,8 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 export default function Header() {
     const { user, profile, signOut } = useAuth();
+    const { cartCount } = useCart();
     const navigate = useNavigate();
 
     const handleSignOut = async () => {
@@ -76,9 +78,11 @@ export default function Header() {
 
                     <Link to="/cart" className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition-colors text-slate-700 dark:text-slate-300 ml-2">
                         <span className="material-symbols-outlined">shopping_cart</span>
-                        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm">
-                            0
-                        </span>
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm animate-in zoom-in duration-300">
+                                {cartCount}
+                            </span>
+                        )}
                     </Link>
                 </div>
             </div>
