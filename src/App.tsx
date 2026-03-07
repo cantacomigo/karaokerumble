@@ -1749,7 +1749,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
               <ThumbsUp size={16} className={hasLiked ? 'fill-current' : ''} /> {video.likes} curtidas
             </button>
           </div>
-          <div className="pt-6 border-t border-border-dark">
+          <div className="pt-6 border-t border-border-dark hidden md:block">
             <p className="text-slate-300 text-lg leading-relaxed">{video.description}</p>
           </div>
         </div>
