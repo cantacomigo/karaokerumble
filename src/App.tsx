@@ -351,7 +351,10 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigateTo('settings')}
+              className="flex items-center gap-3 hover:opacity-80 transition-all focus:outline-none"
+            >
               <div className="text-right hidden sm:block">
                 <div className="flex items-center gap-2 justify-end">
                   {user.isAdmin && (
@@ -367,7 +370,7 @@ export default function App() {
                 alt="Avatar"
                 referrerPolicy="no-referrer"
               />
-            </div>
+            </button>
           </div>
         </header>
 
