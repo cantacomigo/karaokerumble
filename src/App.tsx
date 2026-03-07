@@ -223,6 +223,7 @@ export default function App() {
   };
 
   const navigateTo = (screen: Screen, video: Video | null = null) => {
+    window.scrollTo(0, 0);
     setCurrentScreen(screen);
     setIsMobileMenuOpen(false);
     if (video) setSelectedVideo(video);
