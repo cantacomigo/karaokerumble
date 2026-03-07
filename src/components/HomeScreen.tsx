@@ -46,7 +46,7 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                     </h1>
 
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mt-6">
-                        A maior biblioteca de playbacks profissionais do Brasil. Solte a voz com a qualidade de um estúdio no conforto da sua casa.
+                        Acesso exclusivo à maior e melhor biblioteca de playbacks e bases instrumentais do Brasil. Cante seus sucessos favoritos com qualidade de estúdio e arranjos profissionais!
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
