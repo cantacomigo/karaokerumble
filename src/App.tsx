@@ -1004,13 +1004,31 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      // 1. Update Auth Metadata
+      const { error: authError } = await supabase.auth.updateUser({
         data: { full_name: formData.name }
       });
+      if (authError) throw authError;
 
-      if (error) throw error;
+      // 2. Update Public Profile Table
+      const { data: session } = await supabase.auth.getSession();
+      if (session?.session?.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            full_name: formData.name,
+            // Only update email if it was actually changed to avoid triggering auth emails unnecessarily
+            ...(formData.email !== user.email ? { email: formData.email } : {})
+          })
+          .eq('id', session.session.user.id);
 
-      onUpdate({ ...user, ...formData });
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+          // We don't throw here because auth update succeeded, just log it
+        }
+      }
+
+      onUpdate({ ...user, name: formData.name, email: formData.email });
       alert('Alterações salvas com sucesso!');
     } catch (err: any) {
       alert('Erro ao salvar: ' + err.message);

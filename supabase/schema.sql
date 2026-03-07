@@ -57,6 +57,10 @@ BEGIN
         ALTER TABLE public.profiles ADD COLUMN plan TEXT DEFAULT 'free' CHECK (plan IN ('free', 'pro'));
     END IF;
 
+    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'profiles' AND COLUMN_NAME = 'plan_expires_at') THEN
+        ALTER TABLE public.profiles ADD COLUMN plan_expires_at TIMESTAMP WITH TIME ZONE;
+    END IF;
+
     IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'profiles' AND COLUMN_NAME = 'view_count') THEN
         ALTER TABLE public.profiles ADD COLUMN view_count INTEGER DEFAULT 0;
     END IF;

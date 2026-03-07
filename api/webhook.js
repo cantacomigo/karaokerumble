@@ -48,7 +48,11 @@ export default async function handler(req, res) {
             return res.status(200).json({ error: 'No userId' });
         }
 
-        // Update the user's plan in Supabase
+        // Calculate expiration date (30 days from now)
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+
+        // Update the user's plan and expiration in Supabase
         const updateRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
             method: 'PATCH',
             headers: {
@@ -57,7 +61,10 @@ export default async function handler(req, res) {
                 'Authorization': `Bearer ${supabaseKey}`,
                 'Prefer': 'return=minimal'
             },
-            body: JSON.stringify({ plan: 'pro' })
+            body: JSON.stringify({
+                plan: 'pro',
+                plan_expires_at: expiresAt.toISOString()
+            })
         });
 
         if (!updateRes.ok) {
