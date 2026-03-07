@@ -36,7 +36,9 @@ import {
   Info,
   TrendingUp,
   Users,
-  Loader2
+  Loader2,
+  Menu,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Screen, Video, User } from './types';
@@ -77,6 +79,7 @@ export default function App() {
   });
 
   const [mp, setMp] = useState<any>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Initialize Mercado Pago SDK
@@ -221,6 +224,7 @@ export default function App() {
 
   const navigateTo = (screen: Screen, video: Video | null = null) => {
     setCurrentScreen(screen);
+    setIsMobileMenuOpen(false);
     if (video) setSelectedVideo(video);
 
     // Refresh data when returning to lists to show updated views/likes
@@ -246,10 +250,24 @@ export default function App() {
       className="flex min-h-screen bg-background-dark selection:bg-primary/30 select-none"
       onContextMenu={(e) => e.preventDefault()}
     >
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 border-r border-border-dark flex flex-col fixed h-full z-50 bg-surface-dark">
-        <div className="p-6 flex flex-col items-center justify-center">
+      <aside className={`w-64 border-r border-border-dark flex flex-col fixed h-full z-50 bg-surface-dark transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <div className="p-6 flex flex-col items-center justify-center relative">
           <img src="/logo.png" className="w-40 h-auto object-contain" alt="Logo" />
+          <button
+            className="md:hidden absolute top-4 right-4 text-slate-400 hover:text-white"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1">
@@ -296,11 +314,17 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 flex flex-col">
+      <main className="flex-1 md:ml-64 flex flex-col min-w-0">
         {/* Header */}
-        <header className="h-16 border-b border-border-dark flex items-center justify-between px-8 bg-background-dark/50 backdrop-blur-md sticky top-0 z-40">
-          <div className="flex items-center gap-8">
-            <h1 className="text-lg font-bold text-white">
+        <header className="h-16 border-b border-border-dark flex items-center justify-between px-4 md:px-8 bg-background-dark/50 backdrop-blur-md sticky top-0 z-30">
+          <div className="flex items-center gap-3 md:gap-8">
+            <button
+              className="md:hidden text-white hover:text-primary transition-colors focus:outline-none"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+            <h1 className="text-base md:text-lg font-bold text-white truncate max-w-[150px] sm:max-w-none">
               {currentScreen === 'dashboard' && 'Biblioteca de Playbacks'}
               {currentScreen === 'videos' && 'Meus Playbacks'}
               {currentScreen === 'analytics' && 'Relatórios de Uso'}
