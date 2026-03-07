@@ -1689,8 +1689,8 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
         <div className="absolute inset-x-0 bottom-0 py-2 bg-primary/20 backdrop-blur-md border-t border-primary/30 overflow-hidden z-20 pointer-events-none">
           <div className="flex whitespace-nowrap animate-marquee">
             {[...Array(10)].map((_, i) => (
-              <span key={i} className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mx-8 flex items-center gap-2">
-                <Music size={12} /> baixe este audio em mp3 <Music size={12} />
+              <span key={i} className="text-[10px] font-black uppercase tracking-[0.2em] text-white mx-8 flex items-center gap-2">
+                <Music size={12} className="text-primary" /> baixe este audio em mp3 <Music size={12} className="text-primary" />
               </span>
             ))}
           </div>
