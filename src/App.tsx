@@ -1550,9 +1550,7 @@ const CropContainer = ({ children }: { children: React.ReactNode }) => (
     className="relative w-full h-full overflow-hidden bg-black aspect-video flex items-center justify-center select-none"
     onContextMenu={(e) => e.preventDefault()}
   >
-    {/* On mobile (default), we crop heavily to remove both the top title and bottom controls of Rumble.
-        On md screens, we use a more relaxed crop. */}
-    <div className="absolute w-[180%] h-[220%] md:w-[120%] md:h-[140%] -top-[60%] -left-[40%] md:-top-[20%] md:-left-[10%]">
+    <div className="absolute inset-0 w-full h-full">
       {children}
     </div>
   </div>
