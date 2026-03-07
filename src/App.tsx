@@ -335,7 +335,7 @@ export default function App() {
                   )}
                   <p className="text-xs font-bold text-white">{user.name}</p>
                 </div>
-                <p className="text-[10px] text-primary/60">{user.isAdmin ? 'Controle Total' : (user.plan === 'pro' ? 'Criador Pro' : 'Criador Gratuito')}</p>
+                <p className="text-[10px] text-primary/60">{user.isAdmin ? 'Controle Total' : (user.plan === 'pro' ? 'Usuário Pro' : 'Usuário Gratuito')}</p>
               </div>
               <img
                 src={user.avatar}
