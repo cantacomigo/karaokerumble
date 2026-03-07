@@ -409,7 +409,7 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
               >
-                <SettingsScreen user={user} onUpdate={setUser} />
+                <SettingsScreen user={user} onUpdate={setUser} onCheckout={handleCheckout} />
               </motion.div>
             )}
 
@@ -961,7 +961,7 @@ function StatCard({ icon, label, value, trend }: { icon: React.ReactNode, label:
     </div>
   );
 }
-function SettingsScreen({ user, onUpdate }: { user: User, onUpdate: (u: User) => void }) {
+function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: (u: User) => void, onCheckout: () => void }) {
   const [formData, setFormData] = useState({
     name: user.name,
     email: user.email
@@ -1081,10 +1081,52 @@ function SettingsScreen({ user, onUpdate }: { user: User, onUpdate: (u: User) =>
           <div className="bg-surface-dark p-6 rounded-2xl border border-border-dark space-y-4">
             <ToggleItem title="Novos Comentários" description="Notificar quando alguém comentar em seus vídeos" defaultChecked />
             <ToggleItem title="Relatórios Semanais" description="Receba um resumo de performance por e-mail" defaultChecked />
-            <GrowthTipsToggle />
           </div>
         </section>
 
+        {!user.isAdmin && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 text-primary">
+              <Sparkles size={20} />
+              <h2 className="text-lg font-bold uppercase tracking-wider">Meu Plano</h2>
+            </div>
+            <div className="bg-surface-dark p-8 rounded-2xl border border-border-dark">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className={`text-sm font-black px-3 py-1 rounded-full ${user.plan === 'pro' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-white/5 text-slate-400 border border-border-dark'}`}>
+                      {user.plan === 'pro' ? 'Usuário Pro ✨' : 'Usuário Gratuito'}
+                    </span>
+                  </div>
+                  <p className="text-slate-400 text-sm">
+                    {user.plan === 'pro'
+                      ? 'Você têm acesso ilimitado a todos os playbacks e downloads de MP3.'
+                      : `Você utilizou ${user.viewCount} de 50 visualizações disponíveis este mês.`}
+                  </p>
+                </div>
+                {user.plan !== 'pro' && (
+                  <button
+                    onClick={onCheckout}
+                    className="bg-primary text-background-dark font-black px-6 py-3 rounded-xl hover:opacity-90 transition-all neon-glow text-sm uppercase tracking-tight"
+                  >
+                    Fazer Upgrade Pro
+                  </button>
+                )}
+              </div>
+              {user.plan !== 'pro' && (
+                <div className="mt-4">
+                  <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all"
+                      style={{ width: `${Math.min((user.viewCount / 50) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">{user.viewCount}/50 visualizações usadas</p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
         <div className="flex items-center justify-between pt-6 border-t border-border-dark">
           <button
             onClick={() => confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível.')}
