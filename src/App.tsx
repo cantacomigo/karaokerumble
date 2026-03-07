@@ -375,6 +375,7 @@ export default function App() {
                   onRefresh={fetchVideos}
                   user={user}
                   searchQuery={searchQuery}
+                  onCheckout={handleCheckout}
                 />
               </motion.div>
             )}
@@ -590,14 +591,14 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
             </div>
             <div>
               <h4 className="text-white font-bold">Uso do Plano Gratuito</h4>
-              <p className="text-slate-400 text-sm">Você assistiu {user.viewCount} de 10 vídeos disponíveis este mês.</p>
+              <p className="text-slate-400 text-sm">Você assistiu {user.viewCount} de 50 vídeos disponíveis este mês.</p>
             </div>
           </div>
           <div className="flex-1 max-w-md hidden md:block">
             <div className="h-2 w-full bg-background-dark rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${(user.viewCount / 10) * 100}%` }}
+                animate={{ width: `${(user.viewCount / 50) * 100}%` }}
                 className="h-full bg-primary neon-glow"
               />
             </div>
@@ -1480,7 +1481,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
     setHasLiked(false);
 
     // Check limit before counting
-    if (user && user.plan === 'free' && user.viewCount >= 10) {
+    if (user && user.plan === 'free' && user.viewCount >= 50) {
       onViewLimitReached();
       return;
     }
@@ -1727,7 +1728,7 @@ function PaywallModal({ onClose, onCheckout }: { onClose: () => void, onCheckout
 
         <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Limite Atingido!</h2>
         <p className="text-slate-400 mb-8 leading-relaxed">
-          Você assistiu aos 10 vídeos gratuitos ou tentou baixar um áudio. Atualize para o **Plano Pro** para ter acesso ilimitado e download de MP3.
+          Você assistiu aos 50 vídeos gratuitos ou tentou baixar um áudio. Atualize para o **Plano Pro** para ter acesso ilimitado e download de MP3.
         </p>
 
         <div className="bg-background-dark border border-border-dark rounded-2xl p-6 mb-8 text-left">

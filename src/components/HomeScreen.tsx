@@ -111,7 +111,7 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                             <p className="text-slate-400 text-sm">Ideal para iniciantes no mundo do conteúdo.</p>
                             <div className="text-4xl font-black">Grátis</div>
                             <ul className="space-y-3 text-sm text-slate-300">
-                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> 10 playbacks por mês</li>
+                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> 50 playbacks por mês</li>
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Qualidade Standard (192kbps)</li>
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Reprodutor Web</li>
                             </ul>

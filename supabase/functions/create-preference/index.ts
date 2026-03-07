@@ -1,18 +1,18 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+// @ts-ignore: Deno is available in Edge Functions
+Deno.serve(async (req) => {
     // Handle CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
+        // @ts-ignore: Deno is available in Edge Functions
         const accessToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
 
         if (!accessToken) {
@@ -54,7 +54,7 @@ serve(async (req) => {
             status: response.status,
         });
 
-    } catch (error) {
+    } catch (error: any) {
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
