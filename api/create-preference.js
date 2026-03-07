@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         return
     }
 
-    const accessToken = process.env.VITE_MERCADO_PAGO_ACCESS_TOKEN;
+    const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || process.env.VITE_MERCADO_PAGO_ACCESS_TOKEN;
 
     if (!accessToken) {
         return res.status(500).json({ error: 'Mercado Pago Access Token is not configured on Vercel' });
