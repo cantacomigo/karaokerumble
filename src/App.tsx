@@ -1716,7 +1716,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Soltando a Voz</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Cante Comigo</span>
+            <span className="text-[10px] font-bold text-white uppercase tracking-widest">Cante Comigo</span>
           </div>
         </div>
 
