@@ -111,9 +111,10 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                             <p className="text-slate-400 text-sm">Ideal para iniciantes no mundo do conteúdo.</p>
                             <div className="text-4xl font-black">Grátis</div>
                             <ul className="space-y-3 text-sm text-slate-300">
-                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> 50 playbacks por mês</li>
+                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> 50 visualizações gratuitas p/ mês</li>
+                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Conheça toda nossa biblioteca</li>
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Qualidade Standard (192kbps)</li>
-                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Reprodutor Web</li>
+                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Reprodutor Web Web/Mobile</li>
                             </ul>
                             <button
                                 onClick={onStart}
@@ -128,9 +129,9 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                             <p className="text-slate-400 text-sm">Voz perfeita com áudio sem perdas.</p>
                             <div className="text-4xl font-black">R$ 34,90<span className="text-sm font-normal text-slate-500">/mês</span></div>
                             <ul className="space-y-3 text-sm text-slate-300">
-                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Playbacks ilimitados</li>
+                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Visualizações Ilimitadas</li>
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Qualidade Master (MP3/320kbps)</li>
-                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Download Offline</li>
+                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Download Offline (320kbps)</li>
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Suporte prioritário</li>
                             </ul>
                             <button

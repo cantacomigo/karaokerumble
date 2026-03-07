@@ -634,8 +634,8 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
               <Sparkles size={24} />
             </div>
             <div>
-              <h4 className="text-white font-bold">Uso do Plano Gratuito</h4>
-              <p className="text-slate-400 text-sm">Você assistiu {user.viewCount} de 50 vídeos disponíveis este mês.</p>
+              <h4 className="text-white font-bold">Conheça o Cante Comigo (Trial)</h4>
+              <p className="text-slate-400 text-sm">Você tem direito a 50 visualizações grátis para testar. Assine o Pro para acessar tudo e baixar MP3 320kbps!</p>
             </div>
           </div>
           <div className="flex-1 max-w-md hidden md:block">
@@ -1880,7 +1880,7 @@ function PaywallModal({ onClose, onCheckout }: { onClose: () => void, onCheckout
 
         <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Limite Atingido!</h2>
         <p className="text-slate-400 mb-8 leading-relaxed">
-          Você assistiu aos 50 vídeos gratuitos ou tentou baixar um áudio. Atualize para o **Plano Pro** para ter acesso ilimitado e download de MP3.
+          Você assistiu às <b>50 músicas gratuitas</b> do mês ou tentou baixar um áudio. Assine o <b>Plano Pro</b> para ter acesso ilimitado e downloads em <b>MP3 320kbps</b>.
         </p>
 
         <div className="bg-background-dark border border-border-dark rounded-2xl p-6 mb-8 text-left">
@@ -1891,7 +1891,8 @@ function PaywallModal({ onClose, onCheckout }: { onClose: () => void, onCheckout
           <ul className="space-y-2">
             {[
               'Visualizações Ilimitadas',
-              'Download de MP3 (Áudios)',
+              'Download em MP3 Alta (320kbps)',
+              'Biblioteca Completa Liberada',
               'Suporte Prioritário'
             ].map((feature, i) => (
               <li key={i} className="flex items-center gap-2 text-xs text-slate-400">
