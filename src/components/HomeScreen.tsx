@@ -129,7 +129,7 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                             <div className="text-4xl font-black">R$ 34,90<span className="text-sm font-normal text-slate-500">/mês</span></div>
                             <ul className="space-y-3 text-sm text-slate-300">
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Playbacks ilimitados</li>
-                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Qualidade Master (WAV/FLAC)</li>
+                                <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Qualidade Master (MP3/320kbps)</li>
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Download Offline</li>
                                 <li className="flex items-center gap-2"><Check size={16} className="text-primary" /> Suporte prioritário</li>
                             </ul>
