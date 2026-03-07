@@ -577,8 +577,8 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
   }, [videos, activeTab, selectedCategory, searchQuery]);
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-end">
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex flex-col md:flex-row md:justify-between items-start md:items-end gap-4 md:gap-0">
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-black tracking-tight text-white">Painel de Vídeos</h2>
@@ -588,7 +588,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
           </div>
           <p className="text-slate-400 mt-1">Sua biblioteca pessoal de playbacks e backing tracks profissionais</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4 w-full md:w-auto">
           <button
             onClick={onRefresh}
             className="bg-surface-dark text-slate-400 p-3 rounded-xl hover:text-white transition-all border border-border-dark"
@@ -659,7 +659,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
         ))}
       </div>
 
-      <div className="flex border-b border-border-dark">
+      <div className="flex overflow-x-auto whitespace-nowrap border-b border-border-dark no-scrollbar pb-1 gap-2 md:gap-0">
         <button
           onClick={() => setActiveTab('all')}
           className={`px-6 py-3 font-bold text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'all' ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-white'}`}
@@ -852,11 +852,11 @@ function VideosScreen({ videos, onVideoClick, isLoading, error, onRefresh, user,
 
       <div className="bg-surface-dark rounded-2xl border border-border-dark overflow-hidden">
         <div className="grid grid-cols-12 gap-4 p-4 border-b border-border-dark text-[10px] font-bold uppercase text-slate-500 tracking-widest bg-background-dark/30">
-          <div className="col-span-5">Vídeo</div>
-          <div className="col-span-2">Data</div>
-          <div className="col-span-1">Duração</div>
-          <div className="col-span-2">Visualizações</div>
-          <div className="col-span-2 text-right">Ações</div>
+          <div className="col-span-9 md:col-span-5">Vídeo</div>
+          <div className="hidden md:block col-span-2">Data</div>
+          <div className="hidden md:block col-span-1">Duração</div>
+          <div className="hidden md:flex col-span-2 items-center">Visualizações</div>
+          <div className="col-span-3 md:col-span-2 text-right">Ações</div>
         </div>
 
         <div className="divide-y divide-border-dark">
@@ -869,26 +869,26 @@ function VideosScreen({ videos, onVideoClick, isLoading, error, onRefresh, user,
           ) : (
             filteredVideos.map(video => (
               <div key={video.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/5 transition-colors group">
-                <div className="col-span-5 flex items-center gap-4">
-                  <div className="relative w-24 aspect-video rounded-lg overflow-hidden flex-shrink-0">
+                <div className="col-span-9 md:col-span-5 flex items-center gap-4">
+                  <div className="hidden sm:block relative w-24 aspect-video rounded-lg overflow-hidden flex-shrink-0">
                     <img src={video.thumbnail} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-white line-clamp-1 group-hover:text-primary transition-colors cursor-pointer" onClick={() => onVideoClick(video)}>{video.title}</h4>
+                      <h4 className="text-sm font-bold text-white truncate group-hover:text-primary transition-colors cursor-pointer" onClick={() => onVideoClick(video)}>{video.title}</h4>
                       {(video as any).status === 'draft' && (
-                        <span className="text-[8px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded uppercase font-black tracking-tighter">Rascunho</span>
+                        <span className="text-[8px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded uppercase font-black tracking-tighter shrink-0">Rascunho</span>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-500 line-clamp-1">{video.description}</p>
+                    <p className="text-[10px] text-slate-500 truncate hidden sm:block">{video.description}</p>
                   </div>
                 </div>
-                <div className="col-span-2 text-xs text-slate-400">{video.date}</div>
-                <div className="col-span-1 text-xs text-slate-400 font-mono">{video.duration}</div>
-                <div className="col-span-2 text-xs text-slate-400 flex items-center gap-1.5">
+                <div className="hidden md:block col-span-2 text-xs text-slate-400 truncate">{video.date}</div>
+                <div className="hidden md:block col-span-1 text-xs text-slate-400 font-mono">{video.duration}</div>
+                <div className="hidden md:flex col-span-2 text-xs text-slate-400 items-center gap-1.5">
                   <Eye size={14} className="text-primary/60" /> {video.views}
                 </div>
-                <div className="col-span-2 flex justify-end gap-2">
+                <div className="col-span-3 md:col-span-2 flex justify-end gap-1 md:gap-2">
                   {user.isAdmin && (
                     <>
                       <button
@@ -1056,11 +1056,11 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div className="bg-surface-dark rounded-2xl p-8 border border-border-dark flex items-center gap-8">
+      <div className="bg-surface-dark rounded-2xl p-4 md:p-8 border border-border-dark flex flex-col md:flex-row items-center gap-4 md:gap-8 text-center md:text-left">
         <div className="relative">
           <img
             src={user.avatar}
-            className="size-24 rounded-full border-2 border-primary neon-glow object-cover"
+            className="size-20 md:size-24 rounded-full border-2 border-primary neon-glow object-cover"
             alt="Profile"
             referrerPolicy="no-referrer"
           />
@@ -1088,7 +1088,7 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
             <UserIcon size={20} />
             <h2 className="text-lg font-bold uppercase tracking-wider">Informações Pessoais</h2>
           </div>
-          <div className="grid grid-cols-2 gap-6 bg-surface-dark p-8 rounded-2xl border border-border-dark">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-surface-dark p-4 md:p-8 rounded-2xl border border-border-dark">
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Nome Completo</label>
               <input

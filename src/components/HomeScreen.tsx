@@ -41,7 +41,7 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                         <Sparkles size={14} /> Áudio de Alta Fidelidade & Estúdio Virtual
                     </div>
 
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tight leading-[0.9] uppercase">
+                    <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight leading-[0.9] uppercase">
                         Sua Voz, <br /> <span className="text-primary italic">Nossa Orquestra</span>
                     </h1>
 
