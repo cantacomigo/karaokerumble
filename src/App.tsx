@@ -371,7 +371,7 @@ export default function App() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 relative">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 relative">
           <AnimatePresence mode="wait">
             {currentScreen === 'dashboard' && (
               <motion.div
@@ -1745,7 +1745,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
 
       <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
         <div className="flex-1 space-y-4 md:space-y-6">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">{video.title}</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">{video.title}</h1>
           <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-slate-400 font-medium">
             <span className="flex items-center gap-1.5"><Calendar size={16} className="text-primary" /> Publicado em {video.date}</span>
             <span className="size-1 rounded-full bg-slate-700" />
