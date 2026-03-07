@@ -6,6 +6,7 @@ import {
   Settings as SettingsIcon,
   LogOut,
   Search,
+  RefreshCw,
   Bell,
   PlusCircle,
   MoreVertical,
@@ -26,7 +27,6 @@ import {
   Check,
   Lock,
   User as UserIcon,
-  BellRing,
   Code,
   Music,
   FileText,
@@ -326,13 +326,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => alert('Você não tem novas notificações no momento.')}
-              className="p-2 text-slate-400 hover:text-primary transition-colors"
-            >
-              <Bell size={20} />
-            </button>
-            <div className="h-8 w-[1px] bg-border-dark mx-2"></div>
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <div className="flex items-center gap-2 justify-end">
@@ -575,9 +568,9 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
           <button
             onClick={onRefresh}
             className="bg-surface-dark text-slate-400 p-3 rounded-xl hover:text-white transition-all border border-border-dark"
-            title="Atualizar"
+            title="Atualizar Página"
           >
-            <BellRing size={20} className={isLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
           </button>
           {user.isAdmin && (
             <button
@@ -805,9 +798,9 @@ function VideosScreen({ videos, onVideoClick, isLoading, error, onRefresh, user,
         <button
           onClick={onRefresh}
           className="bg-surface-dark text-slate-400 p-3 rounded-xl hover:text-white transition-all border border-border-dark"
-          title="Atualizar"
+          title="Atualizar Página"
         >
-          <BellRing size={20} className={isLoading ? 'animate-spin' : ''} />
+          <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
         </button>
       </div>
 
@@ -1126,7 +1119,7 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
 
         <section className="space-y-4">
           <div className="flex items-center gap-2 text-primary">
-            <BellRing size={20} />
+            <Bell size={20} />
             <h2 className="text-lg font-bold uppercase tracking-wider">Preferências de Notificação</h2>
           </div>
           <div className="bg-surface-dark p-6 rounded-2xl border border-border-dark space-y-4">
