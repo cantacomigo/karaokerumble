@@ -335,15 +335,15 @@ export default function App() {
             </h1>
 
             {currentScreen === 'dashboard' && (
-              <div className="hidden md:flex items-center">
+              <div className="flex items-center">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                   <input
                     type="text"
-                    placeholder="Pesquisar playbacks..."
+                    placeholder="Buscar..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-surface-dark border-none rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:ring-1 focus:ring-primary outline-none"
+                    className="bg-surface-dark border-none rounded-lg pl-10 pr-2 md:pr-4 py-1.5 md:py-2 text-xs md:text-sm w-32 sm:w-48 md:w-64 focus:ring-1 focus:ring-primary outline-none transition-all"
                   />
                 </div>
               </div>
