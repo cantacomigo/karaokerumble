@@ -1,43 +1,20 @@
+import { supabase } from './supabase';
 
 export const createPreference = async () => {
-    const accessToken = import.meta.env.VITE_MERCADO_PAGO_ACCESS_TOKEN;
-
-    if (!accessToken) {
-        console.error('Mercado Pago Access Token missing');
-        return null;
-    }
-
     try {
-        const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                items: [
-                    {
-                        id: 'pro-plan',
-                        title: 'Plano Pro - Cante Comigo',
-                        description: 'Acesso ilimitado e downloads de MP3',
-                        quantity: 1,
-                        unit_price: 34.90,
-                        currency_id: 'BRL'
-                    }
-                ],
-                back_urls: {
-                    success: window.location.origin,
-                    failure: window.location.origin,
-                    pending: window.location.origin
-                },
-                auto_return: 'approved'
-            })
+        // Chamamos a Edge Function do Supabase em vez da API do Mercado Pago diretamente
+        const { data, error } = await supabase.functions.invoke('create-preference', {
+            body: { origin: window.location.origin }
         });
 
-        const data = await response.json();
-        return data.id; // Returns the preference_id
+        if (error) {
+            console.error('Erro ao chamar Edge Function:', error);
+            return null;
+        }
+
+        return data.id; // Retorna o preference_id gerado pelo backend
     } catch (error) {
-        console.error('Error creating MP preference:', error);
+        console.error('Erro na criação da preferência:', error);
         return null;
     }
 };
