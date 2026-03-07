@@ -1,45 +1,41 @@
 
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+export const createPreference = async () => {
+    const accessToken = import.meta.env.VITE_MERCADO_PAGO_ACCESS_TOKEN;
 
-// Initialize the client with your Access Token
-const client = new MercadoPagoConfig({
-    accessToken: import.meta.env.VITE_MERCADO_PAGO_ACCESS_TOKEN
-});
+    if (!accessToken) {
+        console.error('Mercado Pago Access Token missing');
+        return null;
+    }
 
-const preference = new Preference(client);
-
-export const createCheckoutLink = async () => {
     try {
-        const body = {
-            items: [
-                {
-                    id: 'pro-plan',
-                    title: 'Plano Pro - Cante Comigo',
-                    quantity: 1,
-                    unit_price: 34.90,
-                    currency_id: 'BRL'
-                }
-            ],
-            back_urls: {
-                success: window.location.origin,
-                failure: window.location.origin,
-                pending: window.location.origin
+        const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
             },
-            auto_return: 'approved',
-        };
+            body: JSON.stringify({
+                items: [
+                    {
+                        id: 'pro-plan',
+                        title: 'Plano Pro - Cante Comigo',
+                        description: 'Acesso ilimitado e downloads de MP3',
+                        quantity: 1,
+                        unit_price: 34.90,
+                        currency_id: 'BRL'
+                    }
+                ],
+                back_urls: {
+                    success: window.location.origin,
+                    failure: window.location.origin,
+                    pending: window.location.origin
+                },
+                auto_return: 'approved'
+            })
+        });
 
-        // Note: Creating preferences directly from the frontend is NOT recommended for production
-        // due to CORS and security. Ideally, this should be done in a Supabase Edge Function.
-        // We are using a simplified redirect for now as requested.
-
-        // For now, since MP API requires a backend/secret, we will use the Client ID to generate 
-        // a payment link if possible, or provide a direct link if the user has one.
-
-        // If the user doesn't have a fixed link, we advise using the Official MP button/redirect.
-        const checkoutUrl = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=YOUR_PREFERENCE_ID`;
-
-        // Return the URL
-        return checkoutUrl;
+        const data = await response.json();
+        return data.id; // Returns the preference_id
     } catch (error) {
         console.error('Error creating MP preference:', error);
         return null;

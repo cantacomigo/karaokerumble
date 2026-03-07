@@ -45,6 +45,7 @@ import { supabase } from './lib/supabase';
 import { generateGrowthTips, optimizeMetadata } from './lib/gemini';
 import { AuthScreen } from './components/AuthScreen';
 import { HomeScreen } from './components/HomeScreen';
+import { createPreference } from './lib/mercadopago';
 import {
   LineChart,
   Line,
@@ -72,14 +73,18 @@ export default function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        updateUserState(session.user);
-      }
-    });
+  const [mp, setMp] = useState<any>(null);
 
+  useEffect(() => {
+    // Initialize Mercado Pago SDK
+    if ((window as any).MercadoPago) {
+      const mpInstance = new (window as any).MercadoPago(import.meta.env.VITE_MERCADO_PAGO_PUBLIC_KEY, {
+        locale: 'pt-BR'
+      });
+      setMp(mpInstance);
+    }
+
+    // Auth logic
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
@@ -154,6 +159,30 @@ export default function App() {
 
     if (!error) {
       setUser({ ...user, viewCount: newCount });
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!mp) {
+      alert('Mercado Pago não inicializado. Tente atualizar a página.');
+      return;
+    }
+
+    try {
+      const preferenceId = await createPreference();
+      if (preferenceId) {
+        mp.checkout({
+          preference: {
+            id: preferenceId
+          },
+          autoOpen: true
+        });
+      } else {
+        alert('Erro ao gerar o checkout. Tente novamente em instantes.');
+      }
+    } catch (error) {
+      console.error('Erro no checkout:', error);
+      alert('Ocorreu um erro ao processar seu pedido.');
     }
   };
 
@@ -433,17 +462,19 @@ export default function App() {
                   videos={videos}
                   onUpload={() => navigateTo('upload')}
                   onVideoClick={(v) => navigateTo('player', v)}
-                  isLoading={isLoading}
+                  isLoading={isLoadingVideos}
                   error={dbError}
                   onRefresh={fetchVideos}
                   user={user}
                   searchQuery={searchQuery}
+                  onCheckout={handleCheckout}
                 />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-        {showPaywall && <PaywallModal onClose={() => { setShowPaywall(false); navigateTo('dashboard'); }} />}
+        {showPaywall && <PaywallModal onClose={() => { setShowPaywall(false); navigateTo('dashboard'); }} onCheckout={handleCheckout} />}
+
 
         <footer className="mt-auto p-8 text-center text-slate-500 text-xs border-t border-border-dark">
           <p>© 2024 Cante Comigo Video Management System. Todos os direitos reservados.</p>
@@ -468,7 +499,8 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
   );
 }
 
-function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onRefresh, user, searchQuery }: { videos: Video[], onUpload: () => void, onVideoClick: (v: Video) => void, isLoading: boolean, error: string | null, onRefresh: () => void, user: User, searchQuery: string }) {
+function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onRefresh, user, searchQuery, onCheckout }: { videos: Video[], onUpload: () => void, onVideoClick: (v: Video) => void, isLoading: boolean, error: string | null, onRefresh: () => void, user: User, searchQuery: string, onCheckout: () => void }) {
+
   const [activeTab, setActiveTab] = useState<'all' | 'recent' | 'drafts'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
 
@@ -571,10 +603,10 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
             </div>
           </div>
           <button
-            onClick={() => window.open('https://link.mercadopago.com.br/cantecomigopro', '_blank')}
-            className="px-6 py-2 bg-primary text-background-dark font-black rounded-lg text-sm hover:opacity-90 transition-all"
+            onClick={onCheckout}
+            className="px-6 py-2 bg-primary text-background-dark font-black rounded-lg text-sm hover:opacity-90 transition-all font-sans uppercase tracking-tighter"
           >
-            Fazer Upgrade
+            Fazer Upgrade Pro
           </button>
         </div>
       )}
@@ -1674,7 +1706,8 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
   );
 }
 
-function PaywallModal({ onClose }: { onClose: () => void }) {
+function PaywallModal({ onClose, onCheckout }: { onClose: () => void, onCheckout: () => void }) {
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1717,11 +1750,12 @@ function PaywallModal({ onClose }: { onClose: () => void }) {
 
         <div className="flex flex-col gap-3">
           <button
-            className="w-full bg-primary text-background-dark font-black py-4 rounded-xl hover:opacity-90 transition-all neon-glow shadow-lg shadow-primary/20"
-            onClick={() => window.open('https://link.mercadopago.com.br/cantecomigopro', '_blank')}
+            className="w-full bg-primary text-background-dark font-black py-4 rounded-xl hover:opacity-90 transition-all neon-glow shadow-lg shadow-primary/20 font-sans uppercase tracking-tight"
+            onClick={onCheckout}
           >
             Assinar Agora
           </button>
+
           <button
             onClick={onClose}
             className="text-slate-500 text-sm font-bold hover:text-white transition-colors"
