@@ -96,12 +96,32 @@ export default function App() {
     const email = supabaseUser.email || '';
     const isAdmin = email.toLowerCase() === 'joaquimcdacruz@gmail.com';
 
-    // Fetch profile data
-    const { data: profile } = await supabase
+    // Fetch profile data - use maybeSingle to avoid 406 error if not found
+    let { data: profile, error: fetchError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', supabaseUser.id)
-      .single();
+      .maybeSingle();
+
+    // If profile doesn't exist, create it (fail-safe for trigger)
+    if (!profile && !fetchError) {
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          id: supabaseUser.id,
+          full_name: supabaseUser.user_metadata?.full_name || email.split('@')[0] || 'Usuário',
+          email: email,
+          avatar_url: supabaseUser.user_metadata?.avatar_url,
+          plan: 'free',
+          view_count: 0
+        })
+        .select()
+        .maybeSingle();
+
+      if (!createError) {
+        profile = newProfile;
+      }
+    }
 
     setUser({
       name: profile?.full_name || supabaseUser.user_metadata?.full_name || email.split('@')[0] || 'Usuário',
