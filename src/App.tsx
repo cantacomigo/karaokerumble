@@ -80,12 +80,21 @@ export default function App() {
       }
     });
 
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        updateUserState(session.user);
+        setCurrentScreen('dashboard');
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
         updateUserState(session.user);
       } else {
         setUser(null);
+        setCurrentScreen('home');
       }
     });
 
@@ -408,6 +417,27 @@ export default function App() {
                   onViewLimitReached={() => setShowPaywall(true)}
                   onIncrementView={incrementViewCount}
                   onNavigate={navigateTo}
+                />
+              </motion.div>
+            )}
+
+            {/* Fallback to Dashboard if no screen matches and user is logged in */}
+            {currentScreen === 'home' && user && session && (
+              <motion.div
+                key="dashboard-fallback"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <DashboardScreen
+                  videos={videos}
+                  onUpload={() => navigateTo('upload')}
+                  onVideoClick={(v) => navigateTo('player', v)}
+                  isLoading={isLoading}
+                  error={dbError}
+                  onRefresh={fetchVideos}
+                  user={user}
+                  searchQuery={searchQuery}
                 />
               </motion.div>
             )}
