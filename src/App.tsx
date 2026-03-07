@@ -1767,9 +1767,23 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
                     onViewLimitReached();
                   }
                 }}
-                className="h-12 bg-primary/10 border border-primary/30 text-primary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/20 transition-all col-span-2"
+                className={
+                  user?.plan === 'pro'
+                    ? "h-12 bg-primary/10 border border-primary/30 text-primary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/20 transition-all col-span-2"
+                    : "h-12 bg-gradient-to-r from-primary to-purple-500 text-white font-black rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all col-span-2 neon-glow relative overflow-hidden group"
+                }
               >
-                <Plus size={18} /> Baixar MP3 (Privilégio Pro)
+                {user?.plan === 'pro' ? (
+                  <>
+                    <Volume2 size={18} /> Baixar Arquivo MP3
+                  </>
+                ) : (
+                  <>
+                    <Lock size={18} /> Baixar MP3
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1 tracking-wider uppercase">Seja Pro ✨</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full duration-1000 transition-transform" />
+                  </>
+                )}
               </button>
             )}
           </div>
