@@ -495,8 +495,11 @@ function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode, labe
 
 function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onRefresh, user, searchQuery, onCheckout }: { videos: Video[], onUpload: () => void, onVideoClick: (v: Video) => void, isLoading: boolean, error: string | null, onRefresh: () => void, user: User, searchQuery: string, onCheckout: () => void }) {
 
-  const [activeTab, setActiveTab] = useState<'all' | 'recent' | 'drafts'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'recent' | 'drafts' | 'saved'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
+  const [savedVideoIds, setSavedVideoIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('savedVideos') || '[]'); } catch { return []; }
+  });
 
   const categories = ['Todos', 'Sertanejo', 'Pop', 'Rock', 'Gospel', 'MPB', 'Forró'];
 
@@ -534,6 +537,9 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
 
     if (activeTab === 'drafts') {
       return base.filter(v => (v as any).status === 'draft');
+    }
+    if (activeTab === 'saved') {
+      return base.filter(v => savedVideoIds.includes(v.id));
     }
 
     return base;
@@ -641,6 +647,14 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
             className={`px-6 py-3 font-bold text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'drafts' ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-white'}`}
           >
             <FileText size={16} /> Rascunhos
+          </button>
+        )}
+        {!user.isAdmin && (
+          <button
+            onClick={() => setActiveTab('saved')}
+            className={`px-6 py-3 font-bold text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'saved' ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-white'}`}
+          >
+            <Save size={16} /> Salvos ({savedVideoIds.length})
           </button>
         )}
       </div>
@@ -844,24 +858,28 @@ function VideosScreen({ videos, onVideoClick, isLoading, error, onRefresh, user,
                   <Eye size={14} className="text-primary/60" /> {video.views}
                 </div>
                 <div className="col-span-2 flex justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      const code = video.embedCode || 'Código não disponível';
-                      navigator.clipboard.writeText(code);
-                      alert('Código copiado para a área de transferência!');
-                    }}
-                    className="p-2 text-slate-500 hover:text-primary transition-colors"
-                    title="Ver Código"
-                  >
-                    <Code size={18} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(video.id, video.title)}
-                    className="p-2 text-slate-500 hover:text-red-500 transition-colors"
-                    title="Excluir"
-                  >
-                    <LogOut size={18} className="rotate-180" />
-                  </button>
+                  {user.isAdmin && (
+                    <>
+                      <button
+                        onClick={() => {
+                          const code = video.embedCode || 'Código não disponível';
+                          navigator.clipboard.writeText(code);
+                          alert('Código copiado para a área de transferência!');
+                        }}
+                        className="p-2 text-slate-500 hover:text-primary transition-colors"
+                        title="Ver Código"
+                      >
+                        <Code size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(video.id, video.title)}
+                        className="p-2 text-slate-500 hover:text-red-500 transition-colors"
+                        title="Excluir"
+                      >
+                        <LogOut size={18} className="rotate-180" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))
