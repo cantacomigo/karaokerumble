@@ -23,30 +23,35 @@ export default async function handler(req, res) {
     try {
         const { origin } = req.body;
 
-        const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                items: [
-                    {
-                        id: 'pro-plan',
-                        title: 'Plano Pro - Cante Comigo',
-                        description: 'Acesso ilimitado e downloads de MP3',
-                        quantity: 1,
-                        unit_price: 34.90,
-                        currency_id: 'BRL'
-                    }
-                ],
+        const isHttps = origin && origin.startsWith('https://');
+        const requestBody = {
+            items: [
+                {
+                    id: 'pro-plan',
+                    title: 'Plano Pro - Cante Comigo',
+                    description: 'Acesso ilimitado e downloads de MP3',
+                    quantity: 1,
+                    unit_price: 34.90,
+                    currency_id: 'BRL'
+                }
+            ],
+            ...(isHttps ? {
                 back_urls: {
                     success: origin,
                     failure: origin,
                     pending: origin
                 },
                 auto_return: 'approved'
-            })
+            } : {})
+        };
+
+        const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();

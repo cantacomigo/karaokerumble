@@ -49,12 +49,6 @@ export default defineConfig(({ mode }) => {
                       unit_price: 34.90,
                       currency_id: 'BRL',
                     }],
-                    back_urls: {
-                      success: origin || 'http://localhost:5173',
-                      failure: origin || 'http://localhost:5173',
-                      pending: origin || 'http://localhost:5173',
-                    },
-                    auto_return: 'approved',
                   }),
                 });
                 const data = await mpRes.json();
