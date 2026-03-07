@@ -261,12 +261,14 @@ export default function App() {
             active={currentScreen === 'videos'}
             onClick={() => navigateTo('videos')}
           />
-          <NavItem
-            icon={<BarChart3 size={20} />}
-            label="Analíticas"
-            active={currentScreen === 'analytics'}
-            onClick={() => navigateTo('analytics')}
-          />
+          {user.isAdmin && (
+            <NavItem
+              icon={<BarChart3 size={20} />}
+              label="Analíticas"
+              active={currentScreen === 'analytics'}
+              onClick={() => navigateTo('analytics')}
+            />
+          )}
           <NavItem
             icon={<SettingsIcon size={20} />}
             label="Configurações"
