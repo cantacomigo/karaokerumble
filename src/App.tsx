@@ -1709,8 +1709,8 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
           {renderVideo()}
         </div>
 
-        {/* Scrolling Marquee Bar */}
-        <div className="absolute inset-x-0 bottom-0 py-2 bg-primary/20 backdrop-blur-md border-t border-primary/30 overflow-hidden z-20 pointer-events-none">
+        {/* Scrolling Marquee Bar (Overlay to hide Rumble controls) */}
+        <div className="absolute inset-x-0 bottom-0 py-3 bg-primary/20 backdrop-blur-md border-t border-primary/30 overflow-hidden z-[50]">
           <div className="flex whitespace-nowrap animate-marquee">
             {[...Array(10)].map((_, i) => (
               <span key={i} className="text-[10px] font-black uppercase tracking-[0.2em] text-white mx-8 flex items-center gap-2">
