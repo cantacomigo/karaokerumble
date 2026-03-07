@@ -1709,6 +1709,17 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
           {renderVideo()}
         </div>
 
+        {/* Top Overlay Bar (To hide Rumble title/link) */}
+        <div className="absolute inset-x-0 top-0 py-3 bg-primary/20 backdrop-blur-md border-b border-primary/30 z-[9999] pointer-events-auto flex items-center justify-between px-6">
+          <div className="flex items-center gap-2">
+            <Sparkles size={14} className="text-primary" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Soltando a Voz</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Cante Comigo</span>
+          </div>
+        </div>
+
         {/* Scrolling Marquee Bar (Overlay to hide Rumble controls) */}
         <div className="absolute inset-x-0 bottom-0 py-3 bg-primary/20 backdrop-blur-md border-t border-primary/30 overflow-hidden z-[9999] pointer-events-auto flex items-center">
           <div className="flex whitespace-nowrap animate-marquee">
