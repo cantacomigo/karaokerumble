@@ -1550,7 +1550,9 @@ const CropContainer = ({ children }: { children: React.ReactNode }) => (
     className="relative w-full h-full overflow-hidden bg-black aspect-video flex items-center justify-center select-none"
     onContextMenu={(e) => e.preventDefault()}
   >
-    <div className="absolute w-[120%] h-[140%] -top-[20%] -left-[10%]">
+    {/* On mobile (default), we crop heavily to remove both the top title and bottom controls of Rumble.
+        On md screens, we use a more relaxed crop. */}
+    <div className="absolute w-[180%] h-[220%] md:w-[120%] md:h-[140%] -top-[60%] -left-[40%] md:-top-[20%] md:-left-[10%]">
       {children}
     </div>
   </div>
@@ -1710,7 +1712,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
         </div>
 
         {/* Scrolling Marquee Bar (Overlay to hide Rumble controls) */}
-        <div className="absolute inset-x-0 bottom-0 py-3 bg-primary/20 backdrop-blur-md border-t border-primary/30 overflow-hidden z-[9999] pointer-events-auto">
+        <div className="absolute inset-x-0 bottom-0 py-5 md:py-3 bg-primary/20 backdrop-blur-md border-t border-primary/30 overflow-hidden z-[9999] pointer-events-auto flex items-center">
           <div className="flex whitespace-nowrap animate-marquee">
             {[...Array(10)].map((_, i) => (
               <span key={i} className="text-[10px] font-black uppercase tracking-[0.2em] text-white mx-8 flex items-center gap-2">
@@ -1731,10 +1733,10 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
         }
       `}</style>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1 space-y-6">
-          <h1 className="text-4xl font-black tracking-tight text-white leading-tight">{video.title}</h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 font-medium">
+      <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+        <div className="flex-1 space-y-4 md:space-y-6">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">{video.title}</h1>
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-slate-400 font-medium">
             <span className="flex items-center gap-1.5"><Calendar size={16} className="text-primary" /> Publicado em {video.date}</span>
             <span className="size-1 rounded-full bg-slate-700" />
             <span className="flex items-center gap-1.5"><Eye size={16} className="text-primary" /> {video.views} visualizações</span>
