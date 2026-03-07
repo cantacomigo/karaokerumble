@@ -71,12 +71,12 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                     initial={{ opacity: 0, scale: 0.9, y: 50 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ delay: 0.4, duration: 0.8 }}
-                    className="mt-24 max-w-6xl mx-auto rounded-3xl border border-white/10 overflow-hidden shadow-2xl shadow-primary/10 relative z-10"
+                    className="mt-16 max-w-4xl mx-auto rounded-3xl overflow-hidden relative z-10"
                 >
                     <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent z-10" />
                     <img
                         src="/logo.png"
-                        className="w-full h-full object-contain p-20"
+                        className="w-full h-auto max-h-[400px] object-contain p-8 md:p-12 drop-shadow-2xl"
                         alt="Logo Preview"
                     />
                 </motion.div>
