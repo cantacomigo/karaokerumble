@@ -75,9 +75,9 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                 >
                     <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent z-10" />
                     <img
-                        src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070"
-                        className="w-full h-full object-cover opacity-60"
-                        alt="Dashboard Preview"
+                        src="/logo.png"
+                        className="w-full h-full object-contain p-20"
+                        alt="Logo Preview"
                     />
                 </motion.div>
             </main>
