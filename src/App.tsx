@@ -164,9 +164,8 @@ export default function App() {
 
   const handleCheckout = async () => {
     try {
-      const checkoutUrl = await createPreference();
+      const checkoutUrl = await createPreference(session?.user?.id || '');
       if (checkoutUrl) {
-        // Redireciona para o checkout oficial do Mercado Pago (experiência limpa, sem modal)
         window.open(checkoutUrl, '_blank');
       } else {
         alert('Erro ao gerar o checkout. Tente novamente em instantes.');

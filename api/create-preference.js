@@ -21,9 +21,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { origin } = req.body;
+        const { origin, userId } = req.body;
 
         const isHttps = origin && origin.startsWith('https://');
+        const notificationUrl = isHttps ? `${origin}/api/webhook` : null;
+
         const requestBody = {
             items: [
                 {
@@ -35,6 +37,7 @@ export default async function handler(req, res) {
                     currency_id: 'BRL'
                 }
             ],
+            external_reference: userId || 'unknown',
             ...(isHttps ? {
                 back_urls: {
                     success: origin,
@@ -42,7 +45,8 @@ export default async function handler(req, res) {
                     pending: origin
                 },
                 auto_return: 'approved'
-            } : {})
+            } : {}),
+            ...(notificationUrl ? { notification_url: notificationUrl } : {})
         };
 
         const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
