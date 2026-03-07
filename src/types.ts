@@ -23,6 +23,7 @@ export interface User {
   viewCount: number;
   memberSince: string;
   isAdmin?: boolean;
+  planExpiresAt?: string | null;
 }
 
 export type Screen = 'dashboard' | 'videos' | 'analytics' | 'settings' | 'upload' | 'player' | 'home';

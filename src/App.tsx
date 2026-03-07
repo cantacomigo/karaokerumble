@@ -144,7 +144,8 @@ export default function App() {
       plan: isAdmin ? 'Administrador' : (profile?.plan === 'pro' ? 'pro' : 'free'),
       viewCount: profile?.view_count || 0,
       memberSince: new Date(supabaseUser.created_at).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }),
-      isAdmin: isAdmin
+      isAdmin: isAdmin,
+      planExpiresAt: profile?.plan_expires_at || null,
     });
   };
 
@@ -1100,7 +1101,9 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
                   </div>
                   <p className="text-slate-400 text-sm">
                     {user.plan === 'pro'
-                      ? 'Você têm acesso ilimitado a todos os playbacks e downloads de MP3.'
+                      ? user.planExpiresAt
+                        ? `Válido até ${new Date(user.planExpiresAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
+                        : 'Acesso ilimitado a todos os playbacks e downloads de MP3.'
                       : `Você utilizou ${user.viewCount} de 50 visualizações disponíveis este mês.`}
                   </p>
                 </div>
