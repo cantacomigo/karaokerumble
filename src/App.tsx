@@ -541,7 +541,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
             </div>
           </div>
           <button
-            onClick={() => window.open('https://checkout.exemplo.com', '_blank')}
+            onClick={() => window.open('https://link.mercadopago.com.br/cantecomigopro', '_blank')}
             className="px-6 py-2 bg-primary text-background-dark font-black rounded-lg text-sm hover:opacity-90 transition-all"
           >
             Fazer Upgrade
