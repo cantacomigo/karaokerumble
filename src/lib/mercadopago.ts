@@ -1,17 +1,22 @@
-import { supabase } from './supabase';
 
 export const createPreference = async () => {
     try {
-        // Chamamos a Edge Function do Supabase em vez da API do Mercado Pago diretamente
-        const { data, error } = await supabase.functions.invoke('create-preference', {
-            body: { origin: window.location.origin }
+        // Chamamos a Vercel Serverless Function em vez da Edge Function (Solução sem Docker)
+        const response = await fetch('/api/create-preference', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ origin: window.location.origin })
         });
 
-        if (error) {
-            console.error('Erro ao chamar Edge Function:', error);
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Erro na Vercel Function:', errorData);
             return null;
         }
 
+        const data = await response.json();
         return data.id; // Retorna o preference_id gerado pelo backend
     } catch (error) {
         console.error('Erro na criação da preferência:', error);
