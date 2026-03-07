@@ -1,0 +1,15 @@
+# production
+/dist
+/dist-ssr
+/*.local
+
+# sensitive
+.env
+
+# temp scripts
+get_videos.js
+
+# dependencies
+node_modules
+.pnp
+.pnp.js
