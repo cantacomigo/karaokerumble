@@ -72,6 +72,9 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [savedVideoIds, setSavedVideoIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('savedVideos') || '[]'); } catch { return []; }
+  });
 
   const [mp, setMp] = useState<any>(null);
 
@@ -436,10 +439,21 @@ export default function App() {
                   video={selectedVideo}
                   videos={videos}
                   user={user}
-                  onBack={() => navigateTo('dashboard')}
+                  onBack={() => {
+                    setSelectedVideo(null);
+                    setCurrentScreen('dashboard');
+                  }}
                   onViewLimitReached={() => setShowPaywall(true)}
                   onIncrementView={incrementViewCount}
                   onNavigate={navigateTo}
+                  savedVideoIds={savedVideoIds}
+                  onToggleSaved={(id) => {
+                    const newIds = savedVideoIds.includes(id)
+                      ? savedVideoIds.filter(savedId => savedId !== id)
+                      : [...savedVideoIds, id];
+                    setSavedVideoIds(newIds);
+                    localStorage.setItem('savedVideos', JSON.stringify(newIds));
+                  }}
                 />
               </motion.div>
             )}
@@ -1507,7 +1521,7 @@ const CropContainer = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitReached, onIncrementView, onNavigate }: { video: Video, videos: Video[], user: User | null, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void }) {
+function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitReached, onIncrementView, onNavigate, savedVideoIds, onToggleSaved }: { video: Video, videos: Video[], user: User | null, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void, savedVideoIds: string[], onToggleSaved: (id: string) => void }) {
   const [video, setVideo] = useState(initialVideo);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
@@ -1721,10 +1735,17 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
               <Share2 size={18} /> Compartilhar
             </button>
             <button
-              onClick={() => alert('Vídeo salvo na sua lista!')}
-              className="h-12 bg-surface-dark border border-border-dark text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:border-primary/50 transition-all"
+              onClick={() => {
+                onToggleSaved(video.id);
+                const willBeSaved = !savedVideoIds.includes(video.id);
+                alert(willBeSaved ? 'Vídeo salvo na aba Salvos! ✅' : 'Vídeo removido dos salvos.');
+              }}
+              className={`h-12 bg-surface-dark border font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${savedVideoIds.includes(video.id)
+                ? 'border-primary text-primary'
+                : 'border-border-dark text-white hover:border-primary/50'
+                }`}
             >
-              <Save size={18} /> Salvar
+              <Save size={18} /> {savedVideoIds.includes(video.id) ? 'Remover' : 'Salvar'}
             </button>
             {video.mp3_url && (
               <button
