@@ -104,7 +104,7 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
             {/* Pricing Teaser */}
             <section className="py-20 px-8 bg-surface-dark/50 border-y border-border-dark relative z-10">
                 <div className="max-w-4xl mx-auto text-center space-y-12">
-                    <h2 className="text-4xl font-black uppercase tracking-tighter">Planos para todo criador</h2>
+                    <h2 className="text-4xl font-black uppercase tracking-tighter">Planos para Todo Cantor</h2>
                     <div className="grid md:grid-cols-2 gap-8 text-left">
                         <div className="bg-background-dark p-8 rounded-3xl border border-white/5 space-y-6">
                             <h3 className="text-xl font-bold">Plano Gratuito</h3>
