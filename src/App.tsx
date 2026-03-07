@@ -558,13 +558,15 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
           >
             <BellRing size={20} className={isLoading ? 'animate-spin' : ''} />
           </button>
-          <button
-            onClick={onUpload}
-            className="bg-primary text-background-dark font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-all neon-glow"
-          >
-            <PlusCircle size={20} />
-            Adicionar Novo Vídeo
-          </button>
+          {user.isAdmin && (
+            <button
+              onClick={onUpload}
+              className="bg-primary text-background-dark font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-all neon-glow"
+            >
+              <PlusCircle size={20} />
+              Adicionar Novo Vídeo
+            </button>
+          )}
         </div>
       </div>
 
@@ -632,12 +634,14 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
         >
           <Calendar size={16} /> Recentes
         </button>
-        <button
-          onClick={() => setActiveTab('drafts')}
-          className={`px-6 py-3 font-bold text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'drafts' ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-white'}`}
-        >
-          <FileText size={16} /> Rascunhos
-        </button>
+        {user.isAdmin && (
+          <button
+            onClick={() => setActiveTab('drafts')}
+            className={`px-6 py-3 font-bold text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'drafts' ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-white'}`}
+          >
+            <FileText size={16} /> Rascunhos
+          </button>
+        )}
       </div>
 
       {isLoading ? (
