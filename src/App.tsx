@@ -90,7 +90,7 @@ export default function App() {
       setMp(mpInstance);
     }
 
-    // Unified Auth logic
+    // Consolidated Auth logic
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (session?.user) {
@@ -98,7 +98,7 @@ export default function App() {
         if (currentScreen === 'home') setCurrentScreen('dashboard');
       } else {
         setUser(null);
-        // Do NOT force home screen to allow guest browsing
+        // Do NOT force home screen here, allow guest modes
       }
     });
 
@@ -106,8 +106,6 @@ export default function App() {
       setSession(session);
       if (session?.user) {
         updateUserState(session.user);
-      } else {
-        setUser(null);
       }
     });
 
@@ -115,7 +113,7 @@ export default function App() {
   }, []);
 
   const updateUserState = async (supabaseUser: any) => {
-    if (!supabaseUser?.id) return;
+    if (!supabaseUser?.id || supabaseUser.id === 'undefined' || supabaseUser.id === undefined) return;
     const email = supabaseUser.email || '';
     const isAdmin = email.toLowerCase() === 'joaquimcdacruz@gmail.com';
 
