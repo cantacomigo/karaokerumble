@@ -64,7 +64,7 @@ import {
 import { Session } from '@supabase/supabase-js';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('home');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('dashboard');
   const [showAuth, setShowAuth] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
