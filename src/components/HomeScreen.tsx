@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, TrendingUp, Shield, ChevronRight, Check } from 'lucide-react';
 
-export function HomeScreen({ onStart }: { onStart: () => void }) {
+export function HomeScreen({ onStart, onBrowse }: { onStart: () => void, onBrowse: () => void }) {
     return (
         <div className="min-h-screen bg-background-dark text-white overflow-hidden font-sans">
             {/* Navigation */}
@@ -18,7 +18,7 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
                         Entrar
                     </button>
                     <button
-                        onClick={onStart}
+                        onClick={onBrowse}
                         className="bg-primary text-background-dark font-black px-6 py-2.5 rounded-xl hover:opacity-90 transition-all neon-glow text-sm cursor-pointer"
                     >
                         Começar Grátis
@@ -51,20 +51,21 @@ export function HomeScreen({ onStart }: { onStart: () => void }) {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
                         <button
-                            onClick={onStart}
+                            onClick={onBrowse}
                             className="group bg-primary text-background-dark font-black px-10 py-5 rounded-2xl flex items-center gap-3 hover:opacity-90 transition-all neon-glow text-lg uppercase tracking-tighter cursor-pointer"
                         >
                             Começar a Cantar Agora
                             <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                         </button>
                         <button
-                            onClick={onStart}
+                            onClick={onBrowse}
                             className="bg-white/5 border border-white/10 text-white font-bold px-10 py-5 rounded-2xl hover:bg-white/10 transition-all text-lg cursor-pointer"
                         >
                             Ver Demonstração
                         </button>
                     </div>
                 </motion.div>
+
 
                 {/* Dashboard Preview */}
                 <motion.div

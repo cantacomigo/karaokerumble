@@ -272,7 +272,12 @@ export default function App() {
   };
 
   if (currentScreen === 'home' && !session && !showAuth) {
-    return <HomeScreen onStart={() => setShowAuth(true)} />;
+    return (
+      <HomeScreen
+        onStart={() => setShowAuth(true)}
+        onBrowse={() => setCurrentScreen('dashboard')}
+      />
+    );
   }
 
   // If user is not logged in and not on home, but we allow guest browsing for these screens:
