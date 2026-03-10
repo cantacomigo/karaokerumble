@@ -90,12 +90,49 @@ export default function App() {
       setMp(mpInstance);
     }
 
+    const fetchUser = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          updateUserState({
+            name: data.full_name || 'Usuário',
+            email: data.email || '',
+            avatar: data.avatar_url || `https://ui-avatars.com/api/?name=${data.full_name || 'U'}&background=random`,
+            plan: data.plan || 'free',
+            viewCount: data.view_count || 0,
+            memberSince: new Date(data.created_at).toLocaleDateString('pt-BR'),
+            isAdmin: data.is_admin || false
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+      }
+    };
+
     // Auth logic
+    supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (session?.user) {
+        fetchUser(session.user.id);
+        if (currentScreen === 'home') setCurrentScreen('dashboard');
+      } else {
+        setUser(null);
+      }
+    });
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        updateUserState(session.user);
-        setCurrentScreen('dashboard');
+        fetchUser(session.user.id);
+        if (currentScreen === 'home') setCurrentScreen('dashboard');
+      } else {
+        setUser(null);
       }
     });
 
@@ -238,13 +275,21 @@ export default function App() {
     return <HomeScreen onStart={() => setShowAuth(true)} />;
   }
 
-  if (!session || showAuth) {
+  // If user is not logged in and not on home, but we allow guest browsing for these screens:
+  const allowedGuestScreens: Screen[] = ['dashboard', 'videos', 'player'];
+  const isGuestMode = !session && allowedGuestScreens.includes(currentScreen);
+
+  if (!session && !isGuestMode) {
     return <AuthScreen onAuthSuccess={() => { setShowAuth(false); setCurrentScreen('dashboard'); }} />;
   }
 
+  if (showAuth) {
+    return <AuthScreen onAuthSuccess={() => { setShowAuth(false); setCurrentScreen('dashboard'); }} />;
+  }
 
+  // If we are in guest mode but user state is not yet null (should be handled by setUser(null))
+  // we proceed to render the main layout with a guest indicator
 
-  if (!user) return null;
 
   return (
     <div
@@ -296,21 +341,33 @@ export default function App() {
             icon={<SettingsIcon size={20} />}
             label="Configurações"
             active={currentScreen === 'settings'}
-            onClick={() => navigateTo('settings')}
+            onClick={() => user ? navigateTo('settings') : setShowAuth(true)}
           />
         </nav>
 
         <div className="p-4 border-t border-border-dark">
-          <button
-            onClick={async () => {
-              await supabase.auth.signOut();
-              setCurrentScreen('dashboard');
-            }}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all"
-          >
-            <LogOut size={20} />
-            <span className="text-sm font-bold">Sair do Sistema</span>
-          </button>
+          {user ? (
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                setUser(null);
+                setSession(null);
+                setCurrentScreen('dashboard');
+              }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all"
+            >
+              <LogOut size={20} />
+              <span className="text-sm font-bold">Sair do Sistema</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAuth(true)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all neon-glow"
+            >
+              <UserIcon size={20} />
+              <span className="text-sm font-bold">Entrar / Cadastrar</span>
+            </button>
+          )}
         </div>
       </aside>
 
@@ -359,26 +416,35 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigateTo('settings')}
-              className="flex items-center gap-3 hover:opacity-80 transition-all focus:outline-none"
-            >
-              <div className="text-right hidden sm:block">
-                <div className="flex items-center gap-2 justify-end">
-                  {user.isAdmin && (
-                    <span className="text-[8px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">Admin</span>
-                  )}
-                  <p className="text-xs font-bold text-white">{user.name}</p>
+            {user ? (
+              <button
+                onClick={() => navigateTo('settings')}
+                className="flex items-center gap-3 hover:opacity-80 transition-all focus:outline-none"
+              >
+                <div className="text-right hidden sm:block">
+                  <div className="flex items-center gap-2 justify-end">
+                    {user.isAdmin && (
+                      <span className="text-[8px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">Admin</span>
+                    )}
+                    <p className="text-xs font-bold text-white">{user.name}</p>
+                  </div>
+                  <p className="text-[10px] text-primary/60">{user.isAdmin ? 'Controle Total' : (user.plan === 'pro' ? 'Usuário Pro' : 'Usuário Gratuito')}</p>
                 </div>
-                <p className="text-[10px] text-primary/60">{user.isAdmin ? 'Controle Total' : (user.plan === 'pro' ? 'Usuário Pro' : 'Usuário Gratuito')}</p>
-              </div>
-              <img
-                src={user.avatar}
-                className={`size-8 rounded-full border ${user.isAdmin ? 'border-primary neon-glow' : 'border-primary/30'}`}
-                alt="Avatar"
-                referrerPolicy="no-referrer"
-              />
-            </button>
+                <img
+                  src={user.avatar}
+                  className={`size-8 rounded-full border ${user.isAdmin ? 'border-primary neon-glow' : 'border-primary/30'}`}
+                  alt="Avatar"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAuth(true)}
+                className="flex items-center gap-2 bg-primary/10 text-primary border border-primary/20 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-primary/20 transition-all"
+              >
+                <UserIcon size={14} /> Entrar
+              </button>
+            )}
           </div>
         </header>
 
@@ -465,15 +531,6 @@ export default function App() {
                 exit={{ opacity: 0 }}
               >
                 <PlayerScreen
-                  video={selectedVideo}
-                  videos={videos}
-                  user={user}
-                  onBack={() => {
-                    setSelectedVideo(null);
-                    setCurrentScreen('dashboard');
-                  }}
-                  onViewLimitReached={() => setShowPaywall(true)}
-                  onIncrementView={incrementViewCount}
                   onNavigate={navigateTo}
                   savedVideoIds={savedVideoIds}
                   onToggleSaved={(id) => {
@@ -483,6 +540,7 @@ export default function App() {
                     setSavedVideoIds(newIds);
                     localStorage.setItem('savedVideos', JSON.stringify(newIds));
                   }}
+                  setShowAuth={setShowAuth}
                 />
               </motion.div>
             )}
@@ -1585,7 +1643,7 @@ const CropContainer = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitReached, onIncrementView, onNavigate, savedVideoIds, onToggleSaved }: { video: Video, videos: Video[], user: User | null, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void, savedVideoIds: string[], onToggleSaved: (id: string) => void }) {
+function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitReached, onIncrementView, onNavigate, savedVideoIds, onToggleSaved, setShowAuth }: { video: Video, videos: Video[], user: User | null, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void, savedVideoIds: string[], onToggleSaved: (id: string) => void, setShowAuth: (show: boolean) => void }) {
   const [video, setVideo] = useState(initialVideo);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
@@ -1735,7 +1793,29 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
     <div className="space-y-8">
       <div className="relative aspect-video bg-black rounded-2xl overflow-hidden border border-primary/10 shadow-2xl isolate">
         <div className="w-full h-full relative z-0">
-          {renderVideo()}
+          {user ? renderVideo() : (
+            <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center space-y-6 bg-gradient-to-br from-surface-dark to-background-dark relative overflow-hidden">
+              <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full" />
+              <div className="relative z-10 space-y-4 max-w-sm">
+                <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
+                  <Lock size={40} className="text-primary" />
+                </div>
+                <h3 className="text-2xl font-black uppercase tracking-tight text-white">Conteúdo Restrito</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  Para escutar este playback e baixar os arquivos MP3, você precisa estar conectado à sua conta.
+                </p>
+                <div className="pt-4 flex flex-col gap-3">
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="bg-primary text-background-dark font-black py-4 rounded-xl hover:opacity-90 transition-all neon-glow uppercase tracking-tighter"
+                  >
+                    Iniciar Sessão Agora
+                  </button>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Acesso Gratuito Disponível</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Top Overlay Bar (To hide Rumble title/link) */}
@@ -1811,6 +1891,10 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
             </button>
             <button
               onClick={() => {
+                if (!user) {
+                  setShowAuth(true);
+                  return;
+                }
                 onToggleSaved(video.id);
                 const willBeSaved = !savedVideoIds.includes(video.id);
                 alert(willBeSaved ? 'Vídeo salvo na aba Salvos! ✅' : 'Vídeo removido dos salvos.');
@@ -1825,6 +1909,10 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
             {video.mp3_url && (
               <button
                 onClick={() => {
+                  if (!user) {
+                    setShowAuth(true);
+                    return;
+                  }
                   if (user?.plan === 'pro') {
                     window.open(video.mp3_url, '_blank');
                   } else {
@@ -1837,7 +1925,11 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
                     : "h-12 bg-gradient-to-r from-primary to-purple-500 text-white font-black rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all col-span-2 neon-glow relative overflow-hidden group"
                 }
               >
-                {user?.plan === 'pro' ? (
+                {!user ? (
+                  <>
+                    <Lock size={18} /> Entrar para Baixar
+                  </>
+                ) : user?.plan === 'pro' ? (
                   <>
                     <Volume2 size={18} /> Baixar Voz Normal
                   </>
@@ -1853,6 +1945,10 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
             {video.backing_vocal_url && (
               <button
                 onClick={() => {
+                  if (!user) {
+                    setShowAuth(true);
+                    return;
+                  }
                   if (user?.plan === 'pro') {
                     window.open(video.backing_vocal_url, '_blank');
                   } else {
@@ -1865,7 +1961,11 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
                     : "h-12 bg-gradient-to-r from-purple-600 to-primary text-white font-black rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all col-span-2 neon-glow relative overflow-hidden group"
                 }
               >
-                {user?.plan === 'pro' ? (
+                {!user ? (
+                  <>
+                    <Lock size={18} /> Entrar para Baixar
+                  </>
+                ) : user?.plan === 'pro' ? (
                   <>
                     <Sparkles size={18} /> Baixar Segunda Voz
                   </>
