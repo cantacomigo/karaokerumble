@@ -222,9 +222,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (session) {
-      fetchVideos();
-    }
+    fetchVideos();
   }, [session]);
 
   const fetchVideos = async () => {
