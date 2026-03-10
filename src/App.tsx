@@ -193,9 +193,10 @@ export default function App() {
   };
 
   const incrementViewCount = async () => {
-    if (!user || user.plan === 'Administrador' || user.plan === 'pro') return;
+    if (!user || user?.plan === 'Administrador' || user?.plan === 'pro') return;
 
-    const newCount = (user.viewCount || 0) + 1;
+    const currentCount = user?.viewCount || 0;
+    const newCount = currentCount + 1;
     const { error } = await supabase
       .from('profiles')
       .update({ view_count: newCount })
@@ -334,7 +335,7 @@ export default function App() {
             active={currentScreen === 'videos'}
             onClick={() => navigateTo('videos')}
           />
-          {user.isAdmin && (
+          {user?.isAdmin && (
             <NavItem
               icon={<BarChart3 size={20} />}
               label="Analíticas"
@@ -428,16 +429,16 @@ export default function App() {
               >
                 <div className="text-right hidden sm:block">
                   <div className="flex items-center gap-2 justify-end">
-                    {user.isAdmin && (
+                    {user?.isAdmin && (
                       <span className="text-[8px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">Admin</span>
                     )}
-                    <p className="text-xs font-bold text-white">{user.name}</p>
+                    <p className="text-xs font-bold text-white">{user?.name}</p>
                   </div>
-                  <p className="text-[10px] text-primary/60">{user.isAdmin ? 'Controle Total' : (user.plan === 'pro' ? 'Usuário Pro' : 'Usuário Gratuito')}</p>
+                  <p className="text-[10px] text-primary/60">{user?.isAdmin ? 'Controle Total' : (user?.plan === 'pro' ? 'Usuário Pro' : 'Usuário Gratuito')}</p>
                 </div>
                 <img
-                  src={user.avatar}
-                  className={`size-8 rounded-full border ${user.isAdmin ? 'border-primary neon-glow' : 'border-primary/30'}`}
+                  src={user?.avatar}
+                  className={`size-8 rounded-full border ${user?.isAdmin ? 'border-primary neon-glow' : 'border-primary/30'}`}
                   alt="Avatar"
                   referrerPolicy="no-referrer"
                 />
@@ -666,7 +667,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-black tracking-tight text-white">Painel de Vídeos</h2>
-            {user.isAdmin && (
+            {user?.isAdmin && (
               <span className="text-[10px] bg-primary/20 text-primary border border-primary/30 px-2 py-1 rounded-lg font-black uppercase tracking-widest neon-glow">Admin</span>
             )}
           </div>
@@ -680,7 +681,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
           >
             <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
           </button>
-          {user.isAdmin && (
+          {user?.isAdmin && (
             <button
               onClick={onUpload}
               className="bg-primary text-background-dark font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-all neon-glow"
@@ -699,7 +700,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
         </div>
       )}
 
-      {user.plan === 'free' && (
+      {user?.plan === 'free' && (
         <div className="bg-primary/5 border border-primary/20 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="size-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
@@ -714,7 +715,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
             <div className="h-2 w-full bg-background-dark rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${(user.viewCount / 50) * 100}%` }}
+                animate={{ width: `${((user?.viewCount || 0) / 50) * 100}%` }}
                 className="h-full bg-primary neon-glow"
               />
             </div>
@@ -756,7 +757,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
         >
           <Calendar size={16} /> Recentes
         </button>
-        {user.isAdmin && (
+        {user?.isAdmin && (
           <button
             onClick={() => setActiveTab('drafts')}
             className={`px-6 py-3 font-bold text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'drafts' ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-white'}`}
@@ -764,7 +765,7 @@ function DashboardScreen({ videos, onUpload, onVideoClick, isLoading, error, onR
             <FileText size={16} /> Rascunhos
           </button>
         )}
-        {!user.isAdmin && (
+        {!user?.isAdmin && (
           <button
             onClick={() => setActiveTab('saved')}
             className={`px-6 py-3 font-bold text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'saved' ? 'text-primary border-primary' : 'text-slate-500 border-transparent hover:text-white'}`}
@@ -897,7 +898,7 @@ function VideosScreen({ videos, onVideoClick, isLoading, error, onRefresh, user,
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-black tracking-tight text-white">Meus Vídeos</h2>
-            {user.isAdmin && (
+            {user?.isAdmin && (
               <span className="text-[10px] bg-primary/20 text-primary border border-primary/30 px-2 py-1 rounded-lg font-black uppercase tracking-widest neon-glow">Admin</span>
             )}
           </div>
@@ -973,7 +974,7 @@ function VideosScreen({ videos, onVideoClick, isLoading, error, onRefresh, user,
                   <Eye size={14} className="text-primary/60" /> {video.views}
                 </div>
                 <div className="col-span-3 md:col-span-2 flex justify-end gap-1 md:gap-2">
-                  {user.isAdmin && (
+                  {user?.isAdmin && (
                     <>
                       <button
                         onClick={() => {
@@ -1097,8 +1098,8 @@ function StatCard({ icon, label, value, trend }: { icon: React.ReactNode, label:
 }
 function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: (u: User) => void, onCheckout: () => void }) {
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email
+    name: user?.name || '',
+    email: user?.email || ''
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -1143,7 +1144,7 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
       <div className="bg-surface-dark rounded-2xl p-4 md:p-8 border border-border-dark flex flex-col md:flex-row items-center gap-4 md:gap-8 text-center md:text-left">
         <div className="relative">
           <img
-            src={user.avatar}
+            src={user?.avatar}
             className="size-20 md:size-24 rounded-full border-2 border-primary neon-glow object-cover"
             alt="Profile"
             referrerPolicy="no-referrer"
@@ -1154,12 +1155,12 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h3 className="text-2xl font-bold text-white">{user.name}</h3>
-            {user.isAdmin && (
+            <h3 className="text-2xl font-bold text-white">{user?.name}</h3>
+            {user?.isAdmin && (
               <span className="text-[10px] bg-primary/20 text-primary border border-primary/30 px-2 py-1 rounded-lg font-black uppercase tracking-widest neon-glow">Administrador</span>
             )}
           </div>
-          <p className="text-slate-400">{user.isAdmin ? 'Acesso Total ao Sistema' : user.plan} • Membro desde {user.memberSince}</p>
+          <p className="text-slate-400">{user?.isAdmin ? 'Acesso Total ao Sistema' : user?.plan} • Membro desde {user?.memberSince}</p>
         </div>
         <button className="bg-primary text-background-dark font-bold px-6 py-2.5 rounded-xl hover:opacity-90 transition-all neon-glow">
           Alterar Foto
@@ -1236,7 +1237,7 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
           </div>
         </section>
 
-        {!user.isAdmin && (
+        {!user?.isAdmin && (
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-primary">
               <Sparkles size={20} />
@@ -1246,19 +1247,19 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <span className={`text-sm font-black px-3 py-1 rounded-full ${user.plan === 'pro' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-white/5 text-slate-400 border border-border-dark'}`}>
-                      {user.plan === 'pro' ? 'Usuário Pro ✨' : 'Usuário Gratuito'}
+                    <span className={`text-sm font-black px-3 py-1 rounded-full ${user?.plan === 'pro' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-white/5 text-slate-400 border border-border-dark'}`}>
+                      {user?.plan === 'pro' ? 'Usuário Pro ✨' : 'Usuário Gratuito'}
                     </span>
                   </div>
                   <p className="text-slate-400 text-sm">
-                    {user.plan === 'pro'
-                      ? user.planExpiresAt
-                        ? `Válido até ${new Date(user.planExpiresAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
+                    {user?.plan === 'pro'
+                      ? user?.planExpiresAt
+                        ? `Válido até ${new Date(user?.planExpiresAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
                         : 'Acesso ilimitado a todos os playbacks e downloads de MP3.'
-                      : `Você utilizou ${user.viewCount} de 50 visualizações disponíveis este mês.`}
+                      : `Você utilizou ${user?.viewCount} de 50 visualizações disponíveis este mês.`}
                   </p>
                 </div>
-                {user.plan !== 'pro' && (
+                {user?.plan !== 'pro' && (
                   <button
                     onClick={onCheckout}
                     className="bg-primary text-background-dark font-black px-6 py-3 rounded-xl hover:opacity-90 transition-all neon-glow text-sm uppercase tracking-tight"
@@ -1267,15 +1268,15 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
                   </button>
                 )}
               </div>
-              {user.plan !== 'pro' && (
+              {user?.plan !== 'pro' && (
                 <div className="mt-4">
                   <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary transition-all"
-                      style={{ width: `${Math.min((user.viewCount / 50) * 100, 100)}%` }}
+                      style={{ width: `${Math.min(((user?.viewCount || 0) / 50) * 100, 100)}%` }}
                     />
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-1">{user.viewCount}/50 visualizações usadas</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{user?.viewCount}/50 visualizações usadas</p>
                 </div>
               )}
             </div>
@@ -1689,7 +1690,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
     setHasLiked(false);
 
     // Check limit before counting
-    if (user && user.plan === 'free' && user.viewCount >= 50) {
+    if (user && user?.plan === 'free' && (user?.viewCount || 0) >= 50) {
       onViewLimitReached();
       return;
     }
