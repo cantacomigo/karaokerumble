@@ -113,7 +113,10 @@ export default function App() {
   }, []);
 
   const updateUserState = async (supabaseUser: any) => {
-    if (!supabaseUser?.id || supabaseUser.id === 'undefined' || supabaseUser.id === undefined) return;
+    if (!supabaseUser?.id || supabaseUser.id === 'undefined' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supabaseUser.id)) {
+      setUser(null);
+      return;
+    }
     const email = supabaseUser.email || '';
     const isAdmin = email.toLowerCase() === 'joaquimcdacruz@gmail.com';
 
@@ -204,8 +207,6 @@ export default function App() {
         .from('videos')
         .select('*')
         .order('created_at', { ascending: false });
-
-      if (error) throw error;
 
       if (data && data.length > 0) {
         setVideos(data);
