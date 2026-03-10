@@ -536,6 +536,15 @@ export default function App() {
                 exit={{ opacity: 0 }}
               >
                 <PlayerScreen
+                  video={selectedVideo}
+                  videos={videos}
+                  user={user}
+                  onBack={() => {
+                    setSelectedVideo(null);
+                    setCurrentScreen('dashboard');
+                  }}
+                  onViewLimitReached={() => setShowPaywall(true)}
+                  onIncrementView={incrementViewCount}
                   onNavigate={navigateTo}
                   savedVideoIds={savedVideoIds}
                   onToggleSaved={(id) => {
@@ -1654,7 +1663,6 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
   const [hasLiked, setHasLiked] = useState(false);
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Block common "Download/Inspect" keyboard shortcuts - Must be at the top level
