@@ -90,59 +90,24 @@ export default function App() {
       setMp(mpInstance);
     }
 
-    const fetchUser = async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-
-        if (error) throw error;
-        if (data) {
-          updateUserState({
-            name: data.full_name || 'Usuário',
-            email: data.email || '',
-            avatar: data.avatar_url || `https://ui-avatars.com/api/?name=${data.full_name || 'U'}&background=random`,
-            plan: data.plan || 'free',
-            viewCount: data.view_count || 0,
-            memberSince: new Date(data.created_at).toLocaleDateString('pt-BR'),
-            isAdmin: data.is_admin || false
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching profile:', err);
-      }
-    };
-
-    // Auth logic
-    supabase.auth.onAuthStateChange((event, session) => {
+    // Unified Auth logic
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (session?.user) {
-        fetchUser(session.user.id);
+        updateUserState(session.user);
         if (currentScreen === 'home') setCurrentScreen('dashboard');
       } else {
         setUser(null);
+        // Do NOT force home screen to allow guest browsing
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        fetchUser(session.user.id);
-        if (currentScreen === 'home') setCurrentScreen('dashboard');
-      } else {
-        setUser(null);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session?.user) {
         updateUserState(session.user);
       } else {
         setUser(null);
-        setCurrentScreen('home');
       }
     });
 
@@ -150,6 +115,7 @@ export default function App() {
   }, []);
 
   const updateUserState = async (supabaseUser: any) => {
+    if (!supabaseUser?.id) return;
     const email = supabaseUser.email || '';
     const isAdmin = email.toLowerCase() === 'joaquimcdacruz@gmail.com';
 
@@ -246,7 +212,6 @@ export default function App() {
       if (data && data.length > 0) {
         setVideos(data);
       } else {
-        // Se o banco estiver vazio, mostramos uma lista vazia ou mocks apenas na primeira vez
         setVideos([]);
       }
     } catch (err: any) {
