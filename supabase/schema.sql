@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.videos (
     subscribers TEXT DEFAULT '6',
     category TEXT DEFAULT 'Sertanejo',
     mp3_url TEXT,
+    backing_vocal_url TEXT,
     status TEXT DEFAULT 'published' CHECK (status IN ('published', 'draft'))
 );
 
@@ -70,6 +71,9 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'videos' AND COLUMN_NAME = 'mp3_url') THEN
         ALTER TABLE public.videos ADD COLUMN mp3_url TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'videos' AND COLUMN_NAME = 'backing_vocal_url') THEN
+        ALTER TABLE public.videos ADD COLUMN backing_vocal_url TEXT;
     END IF;
 END $$;
 

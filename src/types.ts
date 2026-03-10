@@ -13,6 +13,7 @@ export interface Video {
   embedCode?: string;
   category?: string;
   mp3_url?: string;
+  backing_vocal_url?: string;
 }
 
 export interface User {

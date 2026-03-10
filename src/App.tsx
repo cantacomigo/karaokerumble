@@ -1326,7 +1326,8 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
     thumbnail: '',
     duration: '05:00',
     category: 'Sertanejo',
-    mp3_url: ''
+    mp3_url: '',
+    backing_vocal_url: ''
   });
   const [isOptimizing, setIsOptimizing] = useState(false);
 
@@ -1370,6 +1371,7 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
         likes: '0',
         category: formData.category,
         ...(formData.mp3_url ? { mp3_url: formData.mp3_url } : {}),
+        ...(formData.backing_vocal_url ? { backing_vocal_url: formData.backing_vocal_url } : {}),
         status: status
       };
 
@@ -1437,15 +1439,30 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
               className="w-full bg-background-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
+        </div>
+
+        <div className="space-y-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-bold text-white">
-              <FileText size={16} className="text-primary" /> URL do MP3 (Opcional)
+              <FileText size={16} className="text-primary" /> URL do MP3 (Voz Normal)
             </label>
             <input
               type="text"
               value={formData.mp3_url}
               onChange={(e) => setFormData({ ...formData, mp3_url: e.target.value })}
               placeholder="ex: https://site.com/arquivo.mp3"
+              className="w-full bg-background-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-primary outline-none"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-white">
+              <FileText size={16} className="text-primary" /> URL do MP3 (Segunda Voz)
+            </label>
+            <input
+              type="text"
+              value={formData.backing_vocal_url}
+              onChange={(e) => setFormData({ ...formData, backing_vocal_url: e.target.value })}
+              placeholder="ex: https://site.com/arquivo_2voz.mp3"
               className="w-full bg-background-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
@@ -1552,7 +1569,7 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
@@ -1686,7 +1703,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
     if (code.startsWith('<iframe')) {
       // Inject allow attribute and ensure 100% size
       const processedIframe = code
-        .replace(/<iframe/, '<iframe style="width:100%; height:100%; border:none;"')
+        .replace(/<iframe /, '<iframe style="width:100%; height:100%; border:none;"')
         .replace(/height="[^"]*"/, 'height="100%"')
         .replace(/width="[^"]*"/, 'width="100%"');
 
@@ -1822,11 +1839,39 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
               >
                 {user?.plan === 'pro' ? (
                   <>
-                    <Volume2 size={18} /> Baixar Arquivo MP3
+                    <Volume2 size={18} /> Baixar Voz Normal
                   </>
                 ) : (
                   <>
-                    <Lock size={18} /> Baixar MP3
+                    <Lock size={18} /> Baixar Voz Normal
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1 tracking-wider uppercase">Seja Pro ✨</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full duration-1000 transition-transform" />
+                  </>
+                )}
+              </button>
+            )}
+            {video.backing_vocal_url && (
+              <button
+                onClick={() => {
+                  if (user?.plan === 'pro') {
+                    window.open(video.backing_vocal_url, '_blank');
+                  } else {
+                    onViewLimitReached();
+                  }
+                }}
+                className={
+                  user?.plan === 'pro'
+                    ? "h-12 bg-primary/20 border border-primary/40 text-primary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/30 transition-all col-span-2 shadow-lg shadow-primary/10"
+                    : "h-12 bg-gradient-to-r from-purple-600 to-primary text-white font-black rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all col-span-2 neon-glow relative overflow-hidden group"
+                }
+              >
+                {user?.plan === 'pro' ? (
+                  <>
+                    <Sparkles size={18} /> Baixar Segunda Voz
+                  </>
+                ) : (
+                  <>
+                    <Lock size={18} /> Baixar Segunda Voz
                     <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full ml-1 tracking-wider uppercase">Seja Pro ✨</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full duration-1000 transition-transform" />
                   </>
