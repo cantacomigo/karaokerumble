@@ -1945,6 +1945,7 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
 
   // Block common "Download/Inspect" keyboard shortcuts - Must be at the top level
   useEffect(() => {
@@ -2204,11 +2205,7 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
                   setShowAuth(true);
                   return;
                 }
-                const playlistId = prompt('Digite o ID da playlist (ou escolha na lista em breve):\n' + 
-                  playlists.map(p => `${p.name}: ${p.id}`).join('\n'));
-                if (playlistId) {
-                  addToPlaylist(playlistId, video.id);
-                }
+                setShowPlaylistModal(true);
               }}
               className="h-12 bg-surface-dark border border-border-dark text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:border-primary/50 transition-all"
             >
@@ -2325,7 +2322,71 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
           ))}
         </div>
       </div>
-    </div >
+
+      {/* Select Playlist Modal */}
+      <AnimatePresence>
+        {showPlaylistModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-background-dark/90 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="w-full max-w-md bg-surface-dark border border-border-dark rounded-3xl p-6 sm:p-8 shadow-2xl relative"
+            >
+              <button
+                onClick={() => setShowPlaylistModal(false)}
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-primary/10 rounded-xl">
+                  <ListMusic size={24} className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white uppercase">Salvar na Playlist</h2>
+                  <p className="text-xs text-slate-400 mt-1">Escolha uma playlist para adicionar a música.</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+                {playlists.length === 0 ? (
+                  <p className="text-center text-slate-500 text-sm py-8">Você ainda não tem playlists criadas. Crie no menu "Minhas Playlists".</p>
+                ) : (
+                  playlists.map((playlist: Playlist) => (
+                    <button
+                      key={playlist.id}
+                      onClick={() => {
+                        addToPlaylist(playlist.id, video.id);
+                        setShowPlaylistModal(false);
+                      }}
+                      className="w-full flex items-center gap-4 bg-background-dark p-4 rounded-xl hover:bg-white/5 border border-transparent hover:border-primary/50 transition-all text-left group"
+                    >
+                      <div className="size-10 bg-primary/10 flex items-center justify-center rounded-lg">
+                        <ListMusic size={16} className="text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-white text-sm sm:text-base truncate">{playlist.name}</h4>
+                        <p className="text-[10px] sm:text-xs text-slate-500">{playlist.items?.length || 0} músicas</p>
+                      </div>
+                      <div className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                        <PlusCircle size={18} />
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
