@@ -38,10 +38,11 @@ import {
   Users,
   Loader2,
   Menu,
-  X
+  X,
+  ListMusic
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Screen, Video, User } from './types';
+import { Screen, Video, User, Playlist, PlaylistItem } from './types';
 import { MOCK_VIDEOS } from './constants';
 import { supabase } from './lib/supabase';
 import { generateGrowthTips, optimizeMetadata } from './lib/gemini';
@@ -65,9 +66,14 @@ import {
 import { Session } from '@supabase/supabase-js';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('dashboard');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('home');
+  const [showProfile, setShowProfile] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+  const [queue, setQueue] = useState<Video[]>([]);
+  const [currentQueueIndex, setCurrentQueueIndex] = useState(-1);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(true);
@@ -191,6 +197,84 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (user) {
+      fetchPlaylists();
+    }
+  }, [user]);
+
+  const fetchPlaylists = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('playlists')
+        .select(`
+          *,
+          items:playlist_items(
+            *,
+            video:videos(*)
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPlaylists(data || []);
+    } catch (error) {
+      console.error('Error fetching playlists:', error);
+    }
+  };
+
+  const createPlaylist = async (name: string) => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('playlists')
+        .insert([{ name, user_id: session?.user.id }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setPlaylists([data, ...playlists]);
+      return data;
+    } catch (error) {
+      console.error('Error creating playlist:', error);
+      alert('Erro ao criar playlist');
+    }
+  };
+
+  const addToPlaylist = async (playlistId: string, videoId: string) => {
+    try {
+      const playlist = playlists.find(p => p.id === playlistId);
+      const position = (playlist?.items?.length || 0) + 1;
+
+      const { error } = await supabase
+        .from('playlist_items')
+        .insert([{ playlist_id: playlistId, video_id: videoId, position }]);
+
+      if (error) throw error;
+      fetchPlaylists();
+      alert('Adicionado à playlist!');
+    } catch (error) {
+      console.error('Error adding to playlist:', error);
+      alert('Erro ao adicionar à playlist');
+    }
+  };
+
+  const deletePlaylist = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta playlist?')) return;
+    try {
+      const { error } = await supabase
+        .from('playlists')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setPlaylists(playlists.filter(p => p.id !== id));
+      if (activePlaylist?.id === id) setActivePlaylist(null);
+    } catch (error) {
+      console.error('Error deleting playlist:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchVideos();
   }, [session]);
 
@@ -306,6 +390,13 @@ export default function App() {
             active={currentScreen === 'videos'}
             onClick={() => navigateTo('videos')}
           />
+          <button
+              onClick={() => navigateTo('playlists')}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg w-full transition-all ${currentScreen === 'playlists' ? 'bg-primary text-background-dark font-black neon-glow' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+            >
+              <ListMusic size={20} />
+              <span className="text-sm font-bold">Minhas Playlists</span>
+            </button>
           {user?.isAdmin && (
             <NavItem
               icon={<BarChart3 size={20} />}
@@ -376,6 +467,7 @@ export default function App() {
             <h1 className="text-base md:text-lg font-bold text-white truncate max-w-[150px] sm:max-w-none">
               {currentScreen === 'dashboard' && 'Biblioteca de Playbacks'}
               {currentScreen === 'videos' && 'Meus Playbacks'}
+              {currentScreen === 'playlists' && 'Minhas Playlists'}
               {currentScreen === 'analytics' && 'Relatórios de Uso'}
               {currentScreen === 'settings' && 'Configurações de Perfil'}
               {currentScreen === 'upload' && 'Adicionar Playback'}
@@ -483,6 +575,26 @@ export default function App() {
               </motion.div>
             )}
 
+            {currentScreen === 'playlists' && (
+              <motion.div
+                key="playlists"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <PlaylistsScreen
+                  playlists={playlists}
+                  setPlaylists={setPlaylists}
+                  onVideoClick={(v) => navigateTo('player', v)}
+                  user={user}
+                  onNavigate={navigateTo}
+                  setActivePlaylist={setActivePlaylist}
+                  setQueue={setQueue}
+                  setCurrentQueueIndex={setCurrentQueueIndex}
+                />
+              </motion.div>
+            )}
+
             {currentScreen === 'analytics' && (
               <motion.div
                 key="analytics"
@@ -524,16 +636,22 @@ export default function App() {
                 exit={{ opacity: 0 }}
               >
                 <PlayerScreen
-                  video={selectedVideo}
+                  video={selectedVideo!}
                   videos={videos}
                   user={user}
+                  playlists={playlists}
+                  addToPlaylist={addToPlaylist}
                   onBack={() => {
                     setSelectedVideo(null);
                     setCurrentScreen('dashboard');
+                    setQueue([]);
+                    setCurrentQueueIndex(-1);
                   }}
                   onViewLimitReached={() => setShowPaywall(true)}
                   onIncrementView={incrementViewCount}
-                  onNavigate={navigateTo}
+                  onNavigate={(screen, video) => { navigateTo(screen, video); setQueue([]); setCurrentQueueIndex(-1); }}
+                  setShowAuthModal={setShowAuthModal}
+                  setShowAuth={setShowAuth}
                   savedVideoIds={savedVideoIds}
                   onToggleSaved={(id) => {
                     const newIds = savedVideoIds.includes(id)
@@ -542,8 +660,22 @@ export default function App() {
                     setSavedVideoIds(newIds);
                     localStorage.setItem('savedVideos', JSON.stringify(newIds));
                   }}
-                  setShowAuth={setShowAuth}
-                  setShowAuthModal={setShowAuthModal}
+                  queue={queue}
+                  currentQueueIndex={currentQueueIndex}
+                  onQueueNext={() => {
+                    const nextIndex = currentQueueIndex + 1;
+                    if (queue && nextIndex < queue.length) {
+                      setCurrentQueueIndex(nextIndex);
+                      setSelectedVideo(queue[nextIndex]);
+                    }
+                  }}
+                  onQueuePrev={() => {
+                    const prevIndex = currentQueueIndex - 1;
+                    if (queue && prevIndex >= 0) {
+                      setCurrentQueueIndex(prevIndex);
+                      setSelectedVideo(queue[prevIndex]);
+                    }
+                  }}
                 />
               </motion.div>
             )}
@@ -1641,11 +1773,10 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }
 
-// Container for cropping native controls - IMPORTANT: Define outside to prevent remounts
 const CropContainer = ({ children }: { children: React.ReactNode }) => (
   <div
     className="relative w-full h-full overflow-hidden bg-black aspect-video flex items-center justify-center select-none"
@@ -1657,7 +1788,157 @@ const CropContainer = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitReached, onIncrementView, onNavigate, savedVideoIds, onToggleSaved, setShowAuth, setShowAuthModal }: { video: Video, videos: Video[], user: User | null, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void, savedVideoIds: string[], onToggleSaved: (id: string) => void, setShowAuth: (show: boolean) => void, setShowAuthModal?: (show: boolean) => void }) {
+function PlaylistsScreen({ playlists, setPlaylists, onVideoClick, user, onNavigate, setActivePlaylist, setQueue, setCurrentQueueIndex }: { playlists: Playlist[], setPlaylists: (p: Playlist[]) => void, onVideoClick: (v: Video) => void, user: User | null, onNavigate: (screen: Screen) => void, setActivePlaylist: (p: Playlist | null) => void, setQueue: (q: Video[]) => void, setCurrentQueueIndex: (index: number) => void }) {
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
+
+  const handleCreate = async () => {
+    if (!newPlaylistName.trim()) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase
+        .from('playlists')
+        .insert([{ name: newPlaylistName, user_id: session?.user.id }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setPlaylists([data, ...playlists]);
+      setNewPlaylistName('');
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Erro ao criar playlist. Verifique se você está logado.');
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Minhas Playlists</h2>
+          <p className="text-slate-400 text-sm">Organize seus playbacks favoritos</p>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="bg-primary text-background-dark font-black px-6 py-3 rounded-xl hover:opacity-90 transition-all neon-glow flex items-center justify-center gap-2 uppercase tracking-tight text-sm"
+        >
+          <Plus size={20} />
+          Nova Playlist
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {playlists.map((playlist) => (
+          <div key={playlist.id} className="bg-surface-dark border border-border-dark rounded-2xl p-6 hover:border-primary/30 transition-all group">
+            <div className="flex items-start justify-between mb-4">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary">
+                <Music size={24} />
+              </div>
+              <button 
+                onClick={async () => {
+                  if(confirm('Excluir playlist?')) {
+                    await supabase.from('playlists').delete().eq('id', playlist.id);
+                    setPlaylists(playlists.filter(p => p.id !== playlist.id));
+                  }
+                }}
+                className="text-slate-500 hover:text-red-500 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-1">{playlist.name}</h3>
+            <p className="text-slate-400 text-sm mb-6">{playlist.items?.length || 0} músicas</p>
+            
+            <button
+              onClick={() => {
+                setActivePlaylist(playlist);
+                if (playlist.items && playlist.items.length > 0) {
+                  const videos = playlist.items.map(i => i.video);
+                  setQueue(videos);
+                  setCurrentQueueIndex(0);
+                  onVideoClick(videos[0]);
+                } else {
+                  alert('Esta playlist está vazia. Adicione músicas do dashboard!');
+                }
+              }}
+              className="w-full bg-white/5 border border-white/10 text-white font-bold py-3 rounded-xl hover:bg-primary hover:text-background-dark hover:border-primary transition-all flex items-center justify-center gap-2"
+            >
+              <Play size={18} fill="currentColor" />
+              Tocar Agora
+            </button>
+          </div>
+        ))}
+
+        {playlists.length === 0 && (
+          <div className="col-span-full py-20 bg-surface-dark border-2 border-dashed border-border-dark rounded-3xl flex flex-col items-center justify-center text-center px-6">
+            <div className="bg-white/5 p-6 rounded-full mb-4">
+              <ListMusic size={40} className="text-slate-500" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Nenhuma playlist encontrada</h3>
+            <p className="text-slate-400 max-w-xs mb-8">Crie sua primeira playlist para organizar seus playbacks favoritos e tocar um após o outro.</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="text-primary font-bold hover:underline flex items-center gap-2"
+            >
+              <Plus size={20} />
+              Criar minha primeira playlist
+            </button>
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-surface-dark border border-border-dark w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+            >
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Nova Playlist</h3>
+                  <button onClick={() => setShowCreateModal(false)} className="text-slate-500 hover:text-white transition-colors">
+                    <X size={24} />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-widest text-primary/60 mb-2">Nome da Playlist</label>
+                    <input
+                      type="text"
+                      value={newPlaylistName}
+                      onChange={(e) => setNewPlaylistName(e.target.value)}
+                      placeholder="Ex: Favoritas do Sertanejo"
+                      className="w-full bg-background-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-all"
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    onClick={handleCreate}
+                    disabled={!newPlaylistName.trim()}
+                    className="w-full bg-primary text-background-dark font-black py-4 rounded-xl hover:opacity-90 transition-all neon-glow uppercase tracking-tighter disabled:opacity-50"
+                  >
+                    Criar Playlist
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlaylist, onBack, onViewLimitReached, onIncrementView, onNavigate, savedVideoIds, onToggleSaved, setShowAuth, setShowAuthModal, queue, currentQueueIndex, onQueueNext, onQueuePrev }: { video: Video, videos: Video[], user: User | null, playlists: Playlist[], addToPlaylist: (pId: string, vId: string) => void, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void, savedVideoIds: string[], onToggleSaved: (id: string) => void, setShowAuth: (show: boolean) => void, setShowAuthModal?: (show: boolean) => void, queue?: Video[], currentQueueIndex?: number, onQueueNext?: () => void, onQueuePrev?: () => void }) {
   const [video, setVideo] = useState(initialVideo);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
@@ -1756,6 +2037,21 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
       }
     }
   }, [video.embedCode]);
+
+  // Continuous Playback Logic
+  React.useEffect(() => {
+    if (!queue || queue.length <= 1) return;
+
+    // Convert duration (MM:SS) to seconds
+    const parts = video.duration.split(':').map(Number);
+    const durationInSeconds = parts.length === 2 ? parts[0] * 60 + parts[1] : 300; 
+
+    const timeout = setTimeout(() => {
+      if (onQueueNext) onQueueNext();
+    }, (durationInSeconds - 2) * 1000);
+
+    return () => clearTimeout(timeout);
+  }, [video.id, queue, onQueueNext]);
 
   const renderVideo = () => {
     if (!video.embedCode) return null;
@@ -1901,6 +2197,22 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
               className="h-12 bg-surface-dark border border-border-dark text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:border-primary/50 transition-all"
             >
               <Share2 size={18} /> Compartilhar
+            </button>
+            <button
+              onClick={() => {
+                if (!user) {
+                  setShowAuth(true);
+                  return;
+                }
+                const playlistId = prompt('Digite o ID da playlist (ou escolha na lista em breve):\n' + 
+                  playlists.map(p => `${p.name}: ${p.id}`).join('\n'));
+                if (playlistId) {
+                  addToPlaylist(playlistId, video.id);
+                }
+              }}
+              className="h-12 bg-surface-dark border border-border-dark text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:border-primary/50 transition-all"
+            >
+              <PlusCircle size={18} /> Add Playlist
             </button>
             <button
               onClick={() => {

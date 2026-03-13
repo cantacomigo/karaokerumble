@@ -27,4 +27,20 @@ export interface User {
   planExpiresAt?: string | null;
 }
 
-export type Screen = 'dashboard' | 'videos' | 'analytics' | 'settings' | 'upload' | 'player' | 'home';
+export interface PlaylistItem {
+  id: string;
+  playlist_id: string;
+  video_id: string;
+  position: number;
+  video: Video;
+}
+
+export interface Playlist {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+  items?: PlaylistItem[];
+}
+
+export type Screen = 'dashboard' | 'videos' | 'analytics' | 'settings' | 'upload' | 'player' | 'home' | 'playlists';
