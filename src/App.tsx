@@ -2039,20 +2039,29 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
     }
   }, [video.embedCode]);
 
-  // Continuous Playback Logic
+  // Continuous Playback Logic - use refs to avoid timer reset on every render
+  const onQueueNextRef = React.useRef(onQueueNext);
+  React.useEffect(() => { onQueueNextRef.current = onQueueNext; }, [onQueueNext]);
+
   React.useEffect(() => {
     if (!queue || queue.length <= 1) return;
+    if (currentQueueIndex === undefined || currentQueueIndex < 0) return;
+    if (currentQueueIndex >= queue.length - 1) return; // last song, nothing next
 
     // Convert duration (MM:SS) to seconds
-    const parts = video.duration.split(':').map(Number);
-    const durationInSeconds = parts.length === 2 ? parts[0] * 60 + parts[1] : 300; 
+    const dur = video.duration || '05:00';
+    const parts = dur.split(':').map(Number);
+    const durationInSeconds = parts.length === 2 ? parts[0] * 60 + parts[1] : 300;
+
+    console.log(`[AutoPlay] Timer set for "${video.title}" - ${durationInSeconds}s (queue pos ${currentQueueIndex}/${queue.length - 1})`);
 
     const timeout = setTimeout(() => {
-      if (onQueueNext) onQueueNext();
-    }, (durationInSeconds - 2) * 1000);
+      console.log('[AutoPlay] Timer fired! Advancing to next song...');
+      if (onQueueNextRef.current) onQueueNextRef.current();
+    }, durationInSeconds * 1000);
 
     return () => clearTimeout(timeout);
-  }, [video.id, queue, onQueueNext]);
+  }, [video.id, queue?.length, currentQueueIndex]);
 
   const renderVideo = () => {
     if (!video.embedCode) return null;
@@ -2189,6 +2198,40 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
           >
             <LayoutGrid size={20} /> Voltar ao Painel
           </button>
+
+          {/* Playlist Queue Controls */}
+          {queue && queue.length > 1 && currentQueueIndex !== undefined && currentQueueIndex >= 0 && (
+            <div className="bg-surface-dark border border-border-dark rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <ListMusic size={14} className="text-primary" /> Playlist
+                </span>
+                <span className="text-xs font-bold text-primary">{currentQueueIndex + 1} / {queue.length}</span>
+              </div>
+              <div className="w-full bg-background-dark rounded-full h-1.5">
+                <div
+                  className="bg-primary h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${((currentQueueIndex + 1) / queue.length) * 100}%` }}
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onQueuePrev && onQueuePrev()}
+                  disabled={currentQueueIndex <= 0}
+                  className="flex-1 h-10 bg-background-dark border border-border-dark text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:border-primary/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+                >
+                  ⏮ Anterior
+                </button>
+                <button
+                  onClick={() => onQueueNext && onQueueNext()}
+                  disabled={currentQueueIndex >= queue.length - 1}
+                  className="flex-1 h-10 bg-primary/10 border border-primary/30 text-primary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+                >
+                  Próxima ⏭
+                </button>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => {
