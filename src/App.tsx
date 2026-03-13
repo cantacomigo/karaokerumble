@@ -2039,28 +2039,41 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
     }
   }, [video.embedCode]);
 
-  // Continuous Playback Logic - use refs to avoid timer reset on every render
+  // Continuous Playback Logic - interval-based countdown with visible timer
   const onQueueNextRef = React.useRef(onQueueNext);
   React.useEffect(() => { onQueueNextRef.current = onQueueNext; }, [onQueueNext]);
 
+  const [autoPlaySecondsLeft, setAutoPlaySecondsLeft] = useState<number | null>(null);
+
   React.useEffect(() => {
-    if (!queue || queue.length <= 1) return;
-    if (currentQueueIndex === undefined || currentQueueIndex < 0) return;
-    if (currentQueueIndex >= queue.length - 1) return; // last song, nothing next
+    // Reset and start countdown when a new song starts in a queue
+    if (!queue || queue.length <= 1) { setAutoPlaySecondsLeft(null); return; }
+    if (currentQueueIndex === undefined || currentQueueIndex < 0) { setAutoPlaySecondsLeft(null); return; }
+    if (currentQueueIndex >= queue.length - 1) { setAutoPlaySecondsLeft(null); return; }
 
     // Convert duration (MM:SS) to seconds
     const dur = video.duration || '05:00';
     const parts = dur.split(':').map(Number);
     const durationInSeconds = parts.length === 2 ? parts[0] * 60 + parts[1] : 300;
 
-    console.log(`[AutoPlay] Timer set for "${video.title}" - ${durationInSeconds}s (queue pos ${currentQueueIndex}/${queue.length - 1})`);
+    console.log(`[AutoPlay] Countdown started for "${video.title}" - ${durationInSeconds}s`);
+    setAutoPlaySecondsLeft(durationInSeconds);
 
-    const timeout = setTimeout(() => {
-      console.log('[AutoPlay] Timer fired! Advancing to next song...');
-      if (onQueueNextRef.current) onQueueNextRef.current();
-    }, durationInSeconds * 1000);
+    const interval = setInterval(() => {
+      setAutoPlaySecondsLeft(prev => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          console.log('[AutoPlay] Countdown reached zero! Advancing to next song...');
+          setTimeout(() => {
+            if (onQueueNextRef.current) onQueueNextRef.current();
+          }, 0);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearTimeout(timeout);
+    return () => clearInterval(interval);
   }, [video.id, queue?.length, currentQueueIndex]);
 
   const renderVideo = () => {
@@ -2214,6 +2227,14 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
                   style={{ width: `${((currentQueueIndex + 1) / queue.length) * 100}%` }}
                 />
               </div>
+              {autoPlaySecondsLeft !== null && (
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-slate-500">⏱ Próxima música em</span>
+                  <span className="text-primary font-bold tabular-nums">
+                    {Math.floor(autoPlaySecondsLeft / 60).toString().padStart(2, '0')}:{(autoPlaySecondsLeft % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+              )}
               <div className="flex gap-2">
                 <button
                   onClick={() => onQueuePrev && onQueuePrev()}
