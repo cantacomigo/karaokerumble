@@ -46,6 +46,7 @@ import { MOCK_VIDEOS } from './constants';
 import { supabase } from './lib/supabase';
 import { generateGrowthTips, optimizeMetadata } from './lib/gemini';
 import { AuthScreen } from './components/AuthScreen';
+import { AuthModal } from './components/AuthModal';
 import { HomeScreen } from './components/HomeScreen';
 import { createPreference } from './lib/mercadopago';
 import {
@@ -66,6 +67,7 @@ import { Session } from '@supabase/supabase-js';
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('dashboard');
   const [showAuth, setShowAuth] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(true);
@@ -226,6 +228,13 @@ export default function App() {
     window.scrollTo(0, 0);
     setCurrentScreen(screen);
     setIsMobileMenuOpen(false);
+    
+    // Guest check for player
+    if (!session && screen === 'player') {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (video) setSelectedVideo(video);
 
     // Refresh data when returning to lists to show updated views/likes
@@ -329,7 +338,7 @@ export default function App() {
             </button>
           ) : (
             <button
-              onClick={() => setShowAuth(true)}
+              onClick={() => setShowAuthModal(true)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all neon-glow"
             >
               <UserIcon size={20} />
@@ -337,6 +346,20 @@ export default function App() {
             </button>
           )}
         </div>
+
+        {user && (
+          <div className="mx-4 mb-4 p-3 bg-surface-dark border border-border-dark rounded-xl md:hidden">
+            <div className="flex items-center gap-3 mb-1">
+              <img src={user.avatar} className="size-8 rounded-full border border-primary/30" alt="" />
+              <div>
+                <p className="text-xs font-bold text-white leading-none">{user.name}</p>
+                <p className="text-[10px] text-primary/60 mt-1">
+                  {user.isAdmin ? 'Admin' : (user.plan === 'pro' ? 'Plano Pro ✨' : 'Plano Gratuito')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* Main Content */}
@@ -396,7 +419,9 @@ export default function App() {
                     )}
                     <p className="text-xs font-bold text-white">{user?.name}</p>
                   </div>
-                  <p className="text-[10px] text-primary/60">{user?.isAdmin ? 'Controle Total' : (user?.plan === 'pro' ? 'Usuário Pro' : 'Usuário Gratuito')}</p>
+                  <p className="text-[10px] text-primary/60">
+                    {user?.isAdmin ? 'Controle Total' : (user?.plan === 'pro' ? 'Assinatura Pro ✨' : 'Plano Gratuito')}
+                  </p>
                 </div>
                 <img
                   src={user?.avatar}
@@ -518,6 +543,7 @@ export default function App() {
                     localStorage.setItem('savedVideos', JSON.stringify(newIds));
                   }}
                   setShowAuth={setShowAuth}
+                  setShowAuthModal={setShowAuthModal}
                 />
               </motion.div>
             )}
@@ -546,6 +572,17 @@ export default function App() {
           </AnimatePresence>
         </div>
         {showPaywall && <PaywallModal onClose={() => { setShowPaywall(false); navigateTo('dashboard'); }} onCheckout={handleCheckout} />}
+        
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)}
+          onAuthSuccess={() => {
+            setShowAuthModal(false);
+            if (selectedVideo) {
+              navigateTo('player', selectedVideo);
+            }
+          }}
+        />
 
 
         <footer className="mt-auto p-8 text-center text-slate-500 text-xs border-t border-border-dark">
@@ -1122,7 +1159,9 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
               <span className="text-[10px] bg-primary/20 text-primary border border-primary/30 px-2 py-1 rounded-lg font-black uppercase tracking-widest neon-glow">Administrador</span>
             )}
           </div>
-          <p className="text-slate-400">{user?.isAdmin ? 'Acesso Total ao Sistema' : user?.plan} • Membro desde {user?.memberSince}</p>
+          <p className="text-slate-400">
+            {user?.isAdmin ? 'Acesso Total ao Sistema' : (user?.plan === 'pro' ? 'Plano Pro' : 'Plano Gratuito')} • Membro desde {user?.memberSince}
+          </p>
         </div>
         <button className="bg-primary text-background-dark font-bold px-6 py-2.5 rounded-xl hover:opacity-90 transition-all neon-glow">
           Alterar Foto
@@ -1199,51 +1238,49 @@ function SettingsScreen({ user, onUpdate, onCheckout }: { user: User, onUpdate: 
           </div>
         </section>
 
-        {!user?.isAdmin && (
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 text-primary">
-              <Sparkles size={20} />
-              <h2 className="text-lg font-bold uppercase tracking-wider">Meu Plano</h2>
-            </div>
-            <div className="bg-surface-dark p-8 rounded-2xl border border-border-dark">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className={`text-sm font-black px-3 py-1 rounded-full ${user?.plan === 'pro' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-white/5 text-slate-400 border border-border-dark'}`}>
-                      {user?.plan === 'pro' ? 'Usuário Pro ✨' : 'Usuário Gratuito'}
-                    </span>
-                  </div>
-                  <p className="text-slate-400 text-sm">
-                    {user?.plan === 'pro'
-                      ? user?.planExpiresAt
-                        ? `Válido até ${new Date(user?.planExpiresAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
-                        : 'Acesso ilimitado a todos os playbacks e downloads de MP3.'
-                      : `Você utilizou ${user?.viewCount} de 50 visualizações disponíveis este mês.`}
-                  </p>
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-primary">
+            <Sparkles size={20} />
+            <h2 className="text-lg font-bold uppercase tracking-wider">Meu Plano</h2>
+          </div>
+          <div className="bg-surface-dark p-8 rounded-2xl border border-border-dark">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <span className={`text-sm font-black px-3 py-1 rounded-full ${user?.plan === 'pro' || user?.isAdmin ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-white/5 text-slate-400 border border-border-dark'}`}>
+                    {user?.isAdmin ? 'Administrador ✨' : (user?.plan === 'pro' ? 'Usuário Pro ✨' : 'Usuário Gratuito')}
+                  </span>
                 </div>
-                {user?.plan !== 'pro' && (
-                  <button
-                    onClick={onCheckout}
-                    className="bg-primary text-background-dark font-black px-6 py-3 rounded-xl hover:opacity-90 transition-all neon-glow text-sm uppercase tracking-tight"
-                  >
-                    Fazer Upgrade Pro
-                  </button>
-                )}
+                <p className="text-slate-400 text-sm">
+                  {user?.isAdmin || user?.plan === 'pro'
+                    ? user?.planExpiresAt
+                      ? `Válido até ${new Date(user?.planExpiresAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
+                      : 'Acesso Vitalício ilimitado a todos os arquivos.'
+                    : `Você utilizou ${user?.viewCount} de 50 visualizações disponíveis este mês.`}
+                </p>
               </div>
-              {user?.plan !== 'pro' && (
-                <div className="mt-4">
-                  <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${Math.min(((user?.viewCount || 0) / 50) * 100, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-slate-500 mt-1">{user?.viewCount}/50 visualizações usadas</p>
-                </div>
+              {!user?.isAdmin && user?.plan !== 'pro' && (
+                <button
+                  onClick={onCheckout}
+                  className="bg-primary text-background-dark font-black px-6 py-3 rounded-xl hover:opacity-90 transition-all neon-glow text-sm uppercase tracking-tight"
+                >
+                  Fazer Upgrade Pro
+                </button>
               )}
             </div>
-          </section>
-        )}
+            {!user?.isAdmin && user?.plan !== 'pro' && (
+              <div className="mt-4">
+                <div className="h-1.5 w-full bg-background-dark rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${Math.min(((user?.viewCount || 0) / 50) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">{user?.viewCount}/50 visualizações usadas</p>
+              </div>
+            )}
+          </div>
+        </section>
         <div className="flex items-center justify-between pt-6 border-t border-border-dark">
           <button
             onClick={() => confirm('Tem certeza que deseja excluir sua conta? Esta ação é irreversível.')}
@@ -1620,7 +1657,7 @@ const CropContainer = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitReached, onIncrementView, onNavigate, savedVideoIds, onToggleSaved, setShowAuth }: { video: Video, videos: Video[], user: User | null, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void, savedVideoIds: string[], onToggleSaved: (id: string) => void, setShowAuth: (show: boolean) => void }) {
+function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitReached, onIncrementView, onNavigate, savedVideoIds, onToggleSaved, setShowAuth, setShowAuthModal }: { video: Video, videos: Video[], user: User | null, onBack: () => void, onViewLimitReached: () => void, onIncrementView: () => void, onNavigate: (screen: Screen, v: Video) => void, savedVideoIds: string[], onToggleSaved: (id: string) => void, setShowAuth: (show: boolean) => void, setShowAuthModal?: (show: boolean) => void }) {
   const [video, setVideo] = useState(initialVideo);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
@@ -1782,7 +1819,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
                 </p>
                 <div className="pt-4 flex flex-col gap-3">
                   <button
-                    onClick={() => setShowAuth(true)}
+                    onClick={() => setShowAuthModal ? setShowAuthModal(true) : setShowAuth(true)}
                     className="bg-primary text-background-dark font-black py-4 rounded-xl hover:opacity-90 transition-all neon-glow uppercase tracking-tighter"
                   >
                     Iniciar Sessão Agora
@@ -1795,7 +1832,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
         </div>
 
         {/* Top Overlay Bar (To hide Rumble title/link) */}
-        <div className="absolute inset-x-0 top-0 py-3 bg-primary border-b border-white/10 z-[9999] pointer-events-auto flex items-center justify-between px-6">
+        <div className="absolute inset-x-0 top-0 py-1.5 bg-primary border-b border-white/10 z-[9999] pointer-events-auto flex items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Sparkles size={14} className="text-white" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Soltando a Voz</span>
@@ -1806,7 +1843,7 @@ function PlayerScreen({ video: initialVideo, videos, user, onBack, onViewLimitRe
         </div>
 
         {/* Scrolling Marquee Bar (Overlay to hide Rumble controls) */}
-        <div className="absolute inset-x-0 bottom-0 py-3 bg-primary border-t border-white/10 overflow-hidden z-[9999] pointer-events-auto flex items-center">
+        <div className="absolute inset-x-0 bottom-0 py-1.5 bg-primary border-t border-white/10 overflow-hidden z-[9999] pointer-events-auto flex items-center">
           <div className="flex whitespace-nowrap animate-marquee">
             {[...Array(10)].map((_, i) => (
               <span key={i} className="text-[10px] font-black uppercase tracking-[0.2em] text-white mx-8 flex items-center gap-2">
