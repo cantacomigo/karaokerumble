@@ -2000,6 +2000,7 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
   const [isMuted, setIsMuted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
 
   // Block common "Download/Inspect" keyboard shortcuts - Must be at the top level
   useEffect(() => {
@@ -2100,35 +2101,40 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
   const [autoPlaySecondsLeft, setAutoPlaySecondsLeft] = useState<number | null>(null);
 
   React.useEffect(() => {
-    // Reset and start countdown when a new song starts in a queue
-    if (!queue || queue.length <= 1) { setAutoPlaySecondsLeft(null); return; }
-    if (currentQueueIndex === undefined || currentQueueIndex < 0) { setAutoPlaySecondsLeft(null); return; }
-    if (currentQueueIndex >= queue.length - 1) { setAutoPlaySecondsLeft(null); return; }
-
-    // Convert duration (MM:SS) to seconds
+    // Convert duration (MM:SS) to seconds and add a safety margin (Slack time)
     const dur = video.duration || '05:00';
     const parts = dur.split(':').map(Number);
-    const durationInSeconds = parts.length === 2 ? parts[0] * 60 + parts[1] : 300;
+    // Add 15 seconds of slack to prevent cutting the song early
+    const durationInSeconds = (parts.length === 2 ? parts[0] * 60 + parts[1] : 300) + 15;
 
-    console.log(`[AutoPlay] Countdown started for "${video.title}" - ${durationInSeconds}s`);
+    console.log(`[AutoPlay] Countdown initialized for "${video.title}" - ${durationInSeconds}s (with 15s slack)`);
     setAutoPlaySecondsLeft(durationInSeconds);
 
-    const interval = setInterval(() => {
-      setAutoPlaySecondsLeft(prev => {
-        if (prev === null || prev <= 1) {
-          clearInterval(interval);
-          console.log('[AutoPlay] Countdown reached zero! Advancing to next song...');
-          setTimeout(() => {
-            if (onQueueNextRef.current) onQueueNextRef.current();
-          }, 0);
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    // Initial buffer delay: wait 5 seconds before starting to count down
+    const bufferTimeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        setAutoPlaySecondsLeft(prev => {
+          if (isTimerPaused) return prev; // Pause countdown if requested
+          if (prev === null || prev <= 1) {
+            clearInterval(interval);
+            console.log('[AutoPlay] Countdown reached zero! Advancing to next song...');
+            setTimeout(() => {
+              if (onQueueNextRef.current) onQueueNextRef.current();
+            }, 0);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-    return () => clearInterval(interval);
-  }, [video.id, queue?.length, currentQueueIndex]);
+      // Cleanup interval inside the buffer timeout
+      return () => clearInterval(interval);
+    }, 5000); // 5 seconds buffer
+
+    return () => {
+      clearTimeout(bufferTimeout);
+    };
+  }, [video.id, queue?.length, currentQueueIndex, isTimerPaused]);
 
   const renderVideo = () => {
     if (!video.embedCode) return null;
@@ -2283,8 +2289,16 @@ function PlayerScreen({ video: initialVideo, videos, user, playlists, addToPlayl
               </div>
               {autoPlaySecondsLeft !== null && (
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-slate-500">⏱ Próxima música em</span>
-                  <span className="text-primary font-bold tabular-nums">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-500">⏱ Próxima música em</span>
+                    <button 
+                      onClick={() => setIsTimerPaused(!isTimerPaused)}
+                      className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest transition-all ${isTimerPaused ? 'bg-primary text-background-dark' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+                    >
+                      {isTimerPaused ? 'Retomar' : 'Pausar Tempo'}
+                    </button>
+                  </div>
+                  <span className={`text-primary font-bold tabular-nums ${isTimerPaused ? 'animate-pulse' : ''}`}>
                     {Math.floor(autoPlaySecondsLeft / 60).toString().padStart(2, '0')}:{(autoPlaySecondsLeft % 60).toString().padStart(2, '0')}
                   </span>
                 </div>
