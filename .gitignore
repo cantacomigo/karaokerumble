@@ -1,0 +1,10 @@
+__pycache__/
+bot_chrome_profile/
+bot_chrome_profile_joaquimcruz/
+bot_chrome_profile_naturalisofc/
+bot_chrome_profile_olimpiamais/
+bot_chrome_profile_realstories/
+bot_chrome_profile_uaijoaquim/
+venv/
+rumble_bot.log
+.env
