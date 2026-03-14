@@ -1583,12 +1583,53 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
       if (error) throw error;
 
       console.log('Vídeo salvo com sucesso:', data);
+      
+      // Clear draft on successful save
+      localStorage.removeItem('upload_draft');
+      
       onSave();
     } catch (err: any) {
       console.error('Erro ao salvar no Supabase:', err);
       alert(`Erro ao salvar vídeo: ${err.message || 'Erro desconhecido'}. Verifique se a tabela 'videos' foi criada corretamente.`);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Autosave logic
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('upload_draft');
+    if (savedDraft) {
+      try {
+        const parsedDraft = JSON.parse(savedDraft);
+        setFormData(parsedDraft);
+        console.log('Rascunho recuperado do localStorage');
+      } catch (e) {
+        console.error('Erro ao carregar rascunho:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // Don't save empty form
+      if (formData.title || formData.embed || formData.description) {
+        localStorage.setItem('upload_draft', JSON.stringify(formData));
+      }
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [formData]);
+
+  const handleCancel = () => {
+    if (formData.title || formData.embed || formData.description) {
+      if (confirm('Deseja descartar o rascunho atual?')) {
+        localStorage.removeItem('upload_draft');
+        onCancel();
+      } else {
+        onCancel();
+      }
+    } else {
+      onCancel();
     }
   };
 
@@ -1731,7 +1772,7 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
           </div>
           <div className="flex gap-4">
             <button
-              onClick={onCancel}
+              onClick={handleCancel}
               disabled={isSaving}
               className="px-6 py-2.5 border border-border-dark text-slate-400 font-bold rounded-xl hover:bg-white/5 transition-all disabled:opacity-50"
             >
