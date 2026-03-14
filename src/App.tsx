@@ -82,6 +82,7 @@ export default function App() {
   const [dbError, setDbError] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [savedVideoIds, setSavedVideoIds] = useState<string[]>(() => {
@@ -117,6 +118,7 @@ export default function App() {
       if (session?.user) {
         updateUserState(session.user);
       }
+      setIsAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -329,6 +331,14 @@ export default function App() {
       fetchVideos();
     }
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <Loader2 className="animate-spin text-primary size-12" />
+      </div>
+    );
+  }
 
   if (currentScreen === 'home' && !session && !showAuth) {
     return (
@@ -1525,15 +1535,25 @@ function GrowthTipsToggle() {
 
 function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () => void }) {
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    embed: '',
-    thumbnail: '',
-    duration: '05:00',
-    category: 'Sertanejo',
-    mp3_url: '',
-    backing_vocal_url: ''
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem('upload_draft');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing draft:', e);
+      }
+    }
+    return {
+      title: '',
+      description: '',
+      embed: '',
+      thumbnail: '',
+      duration: '05:00',
+      category: 'Sertanejo',
+      mp3_url: '',
+      backing_vocal_url: ''
+    };
   });
   const [isOptimizing, setIsOptimizing] = useState(false);
 
@@ -1598,18 +1618,9 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
     }
   };
 
-  // Autosave logic
+  // Clear redundant effect since we use lazy initializer now
   useEffect(() => {
-    const savedDraft = localStorage.getItem('upload_draft');
-    if (savedDraft) {
-      try {
-        const parsedDraft = JSON.parse(savedDraft);
-        setFormData(parsedDraft);
-        console.log('Rascunho recuperado do localStorage');
-      } catch (e) {
-        console.error('Erro ao carregar rascunho:', e);
-      }
-    }
+    console.log('UploadScreen mounted, draft loaded from state initializer');
   }, []);
 
   useEffect(() => {
