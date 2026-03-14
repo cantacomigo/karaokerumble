@@ -66,7 +66,9 @@ import {
 import { Session } from '@supabase/supabase-js';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('home');
+  const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
+    return (localStorage.getItem('currentScreen') as Screen) || 'home';
+  });
   const [showProfile, setShowProfile] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -311,6 +313,7 @@ export default function App() {
   const navigateTo = (screen: Screen, video: Video | null = null) => {
     window.scrollTo(0, 0);
     setCurrentScreen(screen);
+    localStorage.setItem('currentScreen', screen);
     setIsMobileMenuOpen(false);
     
     // Guest check for player
@@ -354,8 +357,7 @@ export default function App() {
 
   return (
     <div
-      className="flex min-h-screen bg-background-dark selection:bg-primary/30 select-none"
-      onContextMenu={(e) => e.preventDefault()}
+      className="flex min-h-screen bg-background-dark selection:bg-primary/30"
     >
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
@@ -1616,7 +1618,7 @@ function UploadScreen({ onCancel, onSave }: { onCancel: () => void, onSave: () =
       if (formData.title || formData.embed || formData.description) {
         localStorage.setItem('upload_draft', JSON.stringify(formData));
       }
-    }, 1000);
+    }, 300); // Faster autosave (300ms)
     return () => clearTimeout(timeout);
   }, [formData]);
 
